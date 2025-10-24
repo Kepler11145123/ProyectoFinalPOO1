@@ -50,10 +50,9 @@ body {
 }
 
 .text {
-    min-width: 100%;
-    resize: vertical;
-    min-height: 100px;
-    max-height: 200px;
+    min-width: 50%;
+    resize: none;
+    min-height: 25px;
 }
 
 .form-group input:focus,
