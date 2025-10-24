@@ -22,6 +22,11 @@
             
             <label for="imagen_url">URL de la Imagen:</label>
             <input type="text" id="imagen_url" name="imagen_url" value="{{ producto.nombre_columna_imagen if producto else '' }}" required>
+
+            <div class="form-group">
+                <label for="precio">Precio (USD):</label>
+                <input type ="number" id="stock" min="0" value="{{ producto.stock if producto else '0' }}" required>
+            </div>
             
             <button type="submit" class="btn">{{ accion }} Producto</button>
         <a href="/inicio" class="nav-button">Inicio</a>

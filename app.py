@@ -129,17 +129,19 @@ def nuevo_producto():
         descripcion = request.form['descripcion']
         categoria = request.form['categoria']
         imagen_url = request.form['imagen_url']
+        precio = request.form['precio']
+        stock = request.form['stock']
 
         cursor = conexion.cursor()
         cursor.execute(
-            "INSERT INTO categoria (nombre, descripcion, categoria, nombre_columna_imagen) VALUES (%s, %s, %s, %s)",
-            (nombre, descripcion, categoria, imagen_url)
+            "INSERT INTO categoria (nombre, descripcion, categoria, nombre_columna_imagen, precio, stock) VALUES (%s, %s, %s, %s, %s, %s)",
+            (nombre, descripcion, categoria, imagen_url, precio, stock)
         )
         conexion.commit()
         flash('Producto añadido correctamente', 'sucess')
         return redirect(url_for('panel_admin'))
     
-    return render_template('form_producto.html', accion = 'Crear')
+    return render_template('form_producto.html', accion = 'Crear', producto=None)
 
 @app.route('/admin/producto/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -153,12 +155,15 @@ def editar_producto(id):
         descripcion = request.form['descripcion']
         categoria = request.form['categoria']
         imagen_url = request.form['imagen_url']
+        precio = request.form['precio']
+        stock = request.form['stock']
 
         cursor.execute (
-            "UPDATE categoria SET nombre = %s, descripcion = %s, categoria = %s, nombre_columna_imagen = %s WHERE id = %s",
-            (nombre, descripcion, categoria, imagen_url, id)
+            "UPDATE categoria SET nombre = %s, descripcion = %s, categoria = %s, nombre_columna_imagen = %s, precio = %s, stock =%s WHERE id = %s",
+            (nombre, descripcion, categoria, imagen_url, precio, stock, id)
         )
         conexion.commit()
+        cursor.close()
         flash('Producto actualizado correctamente', 'sucess')
         return redirect(url_for('panel_admin'))
     
