@@ -1,83 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html lang="es">
+<head>
     <meta charset="UTF-8" />
     <title>{{ accion }} Producto</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='editar_producto.css') }}"
-    />
-    <link
-      rel="icon"
-      href="../static/imagenes/icons8-illuminati-symbol-48.png"
-    />
-  </head>
-  <body>
+    <!-- La ruta a tu CSS. Asegúrate de que el archivo se llame así en tu carpeta 'static' -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='form_style.css') }}" />
+    <link rel="icon" href="{{ url_for('static', filename='imagenes/icons8-illuminati-symbol-48.png') }}" />
+</head>
+<body>
     <div class="form-container">
-      <h1>{{ accion }} Producto</h1>
-      <form method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-        <label for="nombre">Nombre:</label>
-        <input
-          type="text"
-          id="nombre"
-          name="nombre"
-          value="{{ producto.nombre if producto else '' }}"
-          required placeholder="Nombre"
-        />
+        <h1>{{ accion }} Producto</h1>
+        
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
-        <label for="descripcion">Descripción:</label>
-        <textarea class ="text" id="descripcion" name="descripcion" required placeholder="Añade una descripcion de tu producto">
-        {{ producto.descripcion if producto else '' }}</textarea
-        >
+            <!-- Fila 1: Nombre -->
+            <div class="form-row">
+                <label for="nombre">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" value="{{ producto.nombre if producto else '' }}" required />
+            </div>
 
-        <label for="categoria">Categoría:</label>
-        <input
-          type="text"
-          id="categoria"
-          name="categoria"
-          value="{{ producto.categoria if producto else '' }}"
-          required
-          placeholder=""
-        />
+            <!-- Fila 2: Descripción -->
+            <div class="form-row">
+                <label for="descripcion">Descripción:</label>
+                <textarea id="descripcion" name="descripcion" rows="3" required>{{ producto.descripcion if producto else '' }}</textarea>
+            </div>
 
-        <label for="imagen_url">URL de la Imagen:</label>
-        <input
-          type="text"
-          id="imagen_url"
-          name="imagen_url"
-          value="{{ producto.nombre_columna_imagen if producto else '' }}"
-          required
-        />
+            <!-- Fila 3: Categoría -->
+            <div class="form-row">
+                <label for="categoria">Categoría:</label>
+                <input type="text" id="categoria" name="categoria" value="{{ producto.categoria if producto else '' }}" required />
+            </div>
 
-        <div class="form-group">
-          <label for="precio">Precio (USD):</label>
-          <input
-            type="number"
-            id="precio"
-            name="precio"
-            step="0.01"
-            min="0"
-            value="{{ producto.precio if producto else '0.00' }}"
-            required
-          />
-        </div>
-        <div class="form-group">
-          <label for="stock">Stock (Unidades Disponibles):</label>
-          <input
-            type="number"
-            id="stock"
-            name="stock"
-            min="0"
-            value="{{ producto.stock if producto else '0' }}"
-            required
-          />
-        </div>
+            <!-- Fila 4: URL de la Imagen -->
+            <div class="form-row">
+                <label for="imagen_url">URL de la Imagen:</label>
+                <input type="text" id="imagen_url" name="imagen_url" value="{{ producto.nombre_columna_imagen if producto else '' }}" required />
+            </div>
 
-        <button type="submit" class="btn">{{ accion }} Producto</button>
-        <a href="/inicio" class="nav-button">Inicio</a>
-        <a href="/logout" class="nav-button">Cerrar sesión</a>
-      </form>
+            <!-- Fila 5: Precio -->
+            <div class="form-row">
+                <label for="precio">Precio (USD):</label>
+                <input type="number" id="precio" name="precio" step="0.01" min="0" value="{{ producto.precio if producto else '0.00' }}" required />
+            </div>
+            
+            <!-- Fila 6: Stock -->
+            <div class="form-row">
+                <label for="stock">Stock (Unidades):</label>
+                <input type="number" id="stock" name="stock" min="0" value="{{ producto.stock if producto else '0' }}" required />
+            </div>
+
+            <!-- Fila 7: Botones -->
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{{ accion }} Producto</button>
+                <a href="{{ url_for('panel_admin') }}" class="btn btn-secondary">Cancelar</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-danger">Cerrar sesión</a>
+            </div>
+        </form>
     </div>
-  </body>
+</body>
 </html>

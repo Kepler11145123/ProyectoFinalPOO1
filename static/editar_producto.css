@@ -4,118 +4,72 @@ body {
   background-color: #f8f9fa;
   margin: 0;
   padding: 20px;
-  color: #212529;
 }
 
-/* --- Contenedor del Formulario --- */
+/* --- Contenedor Principal del Formulario --- */
 .form-container {
-  max-width: 900px;
+  max-width: 800px;
   margin: 40px auto;
   padding: 35px;
   background-color: #ffffff;
-  border-radius: 11px;
-  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
 }
 
 .form-container h1 {
   text-align: center;
-  font-size: 28px;
+  font-size: 26px;
   margin-bottom: 30px;
   color: #343a40;
 }
 
-/* --- Grupos del Formulario (Label + Input) --- */
-.form-group {
-  margin-bottom: 20px;
+/* --- La Fila del Formulario (LA CLAVE) --- */
+.form-row {
+  display: flex;         /* Activa Flexbox para la fila */
+  align-items: center;   /* Centra verticalmente la etiqueta y el campo */
+  margin-bottom: 18px;   /* Espacio entre filas */
 }
 
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
+.form-row label {
+  flex-basis: 180px;  /* Ancho fijo para todas las etiquetas */
+  flex-shrink: 0;     /* Evita que la etiqueta se encoja */
   font-weight: 600;
-  font-size: 16px;
-  color: #495057;
+  padding-right: 15px; /* Espacio entre la etiqueta y el campo */
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
-.form-group textarea{
-  width: 100%;
+.form-row input,
+.form-row textarea {
+  flex-grow: 1;         /* Hace que el campo ocupe todo el espacio restante */
+  width: 100%;          /* Asegura que llene el espacio asignado */
   padding: 12px;
   font-size: 16px;
   border: 1px solid #ced4da;
-  border-radius: 8px;
-  box-sizing: border-box; /* Importante para que el padding no afecte el ancho */
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 6px;
+  box-sizing: border-box; /* Muy importante para que el padding no desajuste el tamaño */
 }
 
-.text {
-    min-width: 50%;
-    resize: none;
-    min-height: 25px;
-}
-
-.form-group input:focus,
-.form-group textarea:focus {
-  border-color: #80bdff;
-  outline: 0;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
-}
-
-/* --- Contenedor de Botones (La Magia) --- */
+/* --- Estilos para los Botones --- */
 .form-actions {
-  display: flex;          /* Activa Flexbox */
-  justify-content: center;/* Centra los botones horizontalmente */
-  gap: 15px;              /* Espacio entre los botones */
-  margin-top: 30px;       /* Espacio arriba de los botones */
-  flex-wrap: wrap;        /* Si no caben, se ponen abajo */
+  display: flex;
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+  gap: 12px;
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef; /* Línea separadora sutil */
 }
 
-/* --- Estilo Base para Todos los Botones --- */
 .btn {
-  padding: 12px 28px;
+  padding: 10px 24px;
   font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
+  font-weight: 500;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  text-decoration: none; /* Para los enlaces <a> */
+  text-decoration: none;
   color: white;
   text-align: center;
-  transition: all 0.3s ease;
 }
 
-.btn:hover {
-  transform: translateY(-2px); /* Pequeño efecto al pasar el ratón */
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
-}
-
-/* --- Colores Específicos para cada Botón --- */
-.btn-primary {
-  background-color: #007bff; /* Azul para la acción principal */
-}
-
-.btn-secondary {
-  background-color: #6c757d; /* Gris para la acción secundaria */
-}
-
-.btn-danger {
-  background-color: #dc3545; /* Rojo para acciones peligrosas o de salida */
-}
-
-.nav-button {
-  background-color: #637AB9;
-  color: #fff;
-  border: none;
-  padding: 0.6rem 1rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: background-color 0.3s ease;
-}
-
-.nav-button:hover {
-  background-color: #31326F;
-}
+.btn-primary { background-color: #007bff; }
+.btn-secondary { background-color: #6c757d; }
+.btn-danger { background-color: #dc3545; }
