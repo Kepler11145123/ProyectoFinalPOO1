@@ -1,4 +1,4 @@
-from .entities.producto import Producto
+from models.entities.producto import Producto
 
 class ProductoModel:
 
