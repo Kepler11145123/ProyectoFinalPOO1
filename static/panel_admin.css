@@ -1,81 +1,108 @@
-/* --- Estilos para el Formulario de Productos --- */
-
-body {
-    background-color: #f4f7f6;
-    font-family: 'Poppins', sans-serif; /* Asegúrate de tener esta fuente importada */
+/* --- ESTILOS GENERALES DEL PANEL --- */
+.admin-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
 }
 
-.form-container {
-    max-width: 700px;
-    margin: 40px auto;
-    padding: 30px;
-    background-color: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+.admin-container h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
 }
 
-.form-container h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
+/* --- BOTONES PRINCIPALES (Añadir Producto, etc.) --- */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
 }
 
-/* Agrupa cada etiqueta y campo en un bloque */
-.form-group {
-    margin-bottom: 20px;
+.btn-primary {
+  background-color: #2e8b57; /* Un verde oscuro */
+  color: white;
+  margin-bottom: 1.5rem; /* Espacio debajo del botón */
 }
 
-.form-group label {
-    display: block; /* La etiqueta se pone encima del campo */
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
+.btn-primary:hover {
+  background-color: #256d45;
 }
 
-.form-group input,
-.form-group textarea {
-    width: 100%; /* Ocupa todo el ancho disponible */
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-sizing: border-box; /* Evita que el padding afecte el ancho total */
-    font-size: 16px;
+/* --- TABLA DE GESTIÓN DE PRODUCTOS --- */
+.product-table {
+  width: 100%;
+  border-collapse: collapse; /* Une los bordes de las celdas */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden; /* Para que el borde redondeado funcione */
 }
 
-/* --- Contenedor de Botones (La Magia) --- */
-.form-actions {
-    display: flex; /* Activa Flexbox */
-    justify-content: center; /* Centra los botones horizontalmente */
-    gap: 20px; /* Espacio entre los botones */
-    margin-top: 30px;
+.product-table tbody tr {
+
+  border-left: 3px solid transparent; 
+  border-right: 3px solid transparent;
+  transition: all 0.3s ease; /* Transición suave */
 }
 
-.form-actions .btn-submit,
-.form-actions .btn-secondary {
-    padding: 12px 25px;
-    font-size: 16px;
-    border-radius: 8px;
-    border: none;
-    cursor: pointer;
-    text-decoration: none; /* Para el enlace 'Cancelar' */
-    color: white;
-    font-weight: 600;
-    text-align: center;
+.product-table tbody tr:hover {
+  background-color: #f0f0f0; /* Un fondo sutil para resaltar */
+  border-left-color: #2e8b57; /* Usa el color verde de tu tema */
+  border-right-color: #2e8b57;
 }
 
-.form-actions .btn-submit {
-    background-color: #28a745; /* Verde para acción principal */
+
+
+.product-table th,
+.product-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 0 solid #ddd;
+  vertical-align: middle;
 }
 
-.form-actions .btn-submit:hover {
-    background-color: #218838;
+.product-table th {
+  background-color: #f4f7f6;
+  font-weight: 600;
+  color: #333;
 }
 
-.form-actions .btn-secondary {
-    background-color: #6c757d; /* Gris para acción secundaria */
+/* Estilo para las filas impares para mejor legibilidad */
+.product-table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
 }
 
-.form-actions .btn-secondary:hover {
-    background-color: #5a6268;
+.product-table img {
+  max-width: 80px;
+  border-radius: 6px;
 }
 
+/* --- BOTONES DE ACCIONES (Editar, Eliminar) --- */
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #212121;
+}
+.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+.btn-danger:hover {
+  background-color: #c82333;
+}
