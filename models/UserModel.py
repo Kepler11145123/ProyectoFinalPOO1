@@ -13,10 +13,11 @@ class UserModel:
             cursor.close()
             
             if row:
+                # NO pasamos row[4] (el rol) porque ya tiene valor por defecto
                 if row[4] == 'administrador':
-                    return Administrador(row[0], row[1], row[2], row[3], row[4])
+                    return Administrador(row[0], row[1], row[2], row[3])  # 4 valores
                 else:
-                    return Cliente(row[0], row[1], row[2], row[3], row[4])
+                    return Cliente(row[0], row[1], row[2], row[3])        # 4 valores
             return None
         except Exception as ex:
             raise Exception(f"Error al obtener usuario: {ex}")
@@ -31,10 +32,11 @@ class UserModel:
             cursor.close()
             
             if row and check_password_hash(row[3], user_entity.password):
+                # NO pasamos row[4] (el rol) porque ya tiene valor por defecto
                 if row[4] == 'administrador':
-                    return Administrador(row[0], row[1], row[2], row[3], row[4])
+                    return Administrador(row[0], row[1], row[2], row[3])  # 4 valores
                 else:
-                    return Cliente(row[0], row[1], row[2], row[3], row[4])
+                    return Cliente(row[0], row[1], row[2], row[3])        # 4 valores
             return None
         except Exception as ex:
             raise Exception(f"Error en login: {ex}")
@@ -52,7 +54,7 @@ class UserModel:
             datos = (
                 new_user_entity.nombre,
                 new_user_entity.correo,
-                new_user_entity.password, # La contraseña ya debe venir con hash
+                new_user_entity.password,
                 'cliente'
             )
             cursor.execute(sql_query, datos)
@@ -69,7 +71,7 @@ class UserModel:
         try:
             cursor = db_connection.cursor()
             sql_query = "UPDATE usuarios SET contraseña = %s WHERE correo = %s"
-            datos = (user_entity.password, user_entity.correo) # La contraseña ya viene con hash
+            datos = (user_entity.password, user_entity.correo)
             
             cursor.execute(sql_query, datos)
             db_connection.commit()
@@ -78,4 +80,3 @@ class UserModel:
         except Exception as ex:
             db_connection.rollback()
             raise Exception(f"Error al actualizar la contraseña: {ex}")
-

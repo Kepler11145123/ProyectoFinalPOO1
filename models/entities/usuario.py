@@ -16,8 +16,8 @@ class Cliente(Usuario):
         super().__init__(id, nombre, correo, password, 'cliente')
 
 class Administrador(Usuario):
-    def __init__(self, id, nombre, correo, password):
-        super().__init__(id, nombre, correo, password, 'administrador')
+    def __init__(self, id, nombre, correo, password, rol='administrador'):
+        super().__init__(id, nombre, correo, password, rol)
 
 
 # class Usuario(UserMixin):
