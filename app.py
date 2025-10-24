@@ -7,6 +7,8 @@ from psycopg2.extras import DictCursor
 from models import Usuario, Cliente, Administrador
 from werkzeug.security import generate_password_hash, check_password_hash
 
+import os
+
 app = Flask(__name__)
 app.secret_key = '00000'
 
@@ -16,11 +18,20 @@ csrf = CSRFProtect(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
+
+from dotenv import load_dotenv
+# conexion = psycopg2.connect(
+#     host='localhost',
+#     database='commerce',
+#     user='postgres',
+#     password=''
+# )
+load_dotenv()
 conexion = psycopg2.connect(
-    host='localhost',
-    database='commerce',
-    user='postgres',
-    password=''
+    host=os.getenv('PGHOST',''),
+    database=os.getenv('PGDATABASE',''),
+    user=os.getenv('PGUSER',''),
+    password=os.getenv('PGPASSWORD','')
 )
 
 @app.route('/')
