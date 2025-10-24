@@ -1,37 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>{{ accion }} Producto</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='../static/style.css') }}">
-    <link rel="icon" href="../static/imagenes/icons8-illuminati-symbol-48.png">
-</head>
-<body>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='../static/style.css') }}"
+    />
+    <link
+      rel="icon"
+      href="../static/imagenes/icons8-illuminati-symbol-48.png"
+    />
+  </head>
+  <body>
     <div class="form-container">
-        <h1>{{ accion }} Producto</h1>
-        <form method="POST">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-            <label for="nombre">Nombre:</label>
-            <input type="text" id="nombre" name="nombre" value="{{ producto.nombre if producto else '' }}" required>
-            
-            <label for="descripcion">Descripción:</label>
-            <textarea id="descripcion" name="descripcion" required>{{ producto.descripcion if producto else '' }}</textarea>
-            
-            <label for="categoria">Categoría:</label>
-            <input type="text" id="categoria" name="categoria" value="{{ producto.categoria if producto else '' }}" required>
-            
-            <label for="imagen_url">URL de la Imagen:</label>
-            <input type="text" id="imagen_url" name="imagen_url" value="{{ producto.nombre_columna_imagen if producto else '' }}" required>
+      <h1>{{ accion }} Producto</h1>
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        <label for="nombre">Nombre:</label>
+        <input
+          type="text"
+          id="nombre"
+          name="nombre"
+          value="{{ producto.nombre if producto else '' }}"
+          required
+        />
 
-            <div class="form-group">
-                <label for="precio">Precio (USD):</label>
-                <input type ="number" id="stock" min="0" value="{{ producto.stock if producto else '0' }}" required>
-            </div>
-            
-            <button type="submit" class="btn">{{ accion }} Producto</button>
+        <label for="descripcion">Descripción:</label>
+        <textarea id="descripcion" name="descripcion" required>
+{{ producto.descripcion if producto else '' }}</textarea
+        >
+
+        <label for="categoria">Categoría:</label>
+        <input
+          type="text"
+          id="categoria"
+          name="categoria"
+          value="{{ producto.categoria if producto else '' }}"
+          required
+        />
+
+        <label for="imagen_url">URL de la Imagen:</label>
+        <input
+          type="text"
+          id="imagen_url"
+          name="imagen_url"
+          value="{{ producto.nombre_columna_imagen if producto else '' }}"
+          required
+        />
+
+        <div class="form-group">
+          <label for="precio">Precio (USD):</label>
+          <input
+            type="number"
+            id="precio"
+            name="precio"
+            step="0.01"
+            min="0"
+            value="{{ producto.precio if producto else '0.00' }}"
+            required
+          />
+        </div>
+        <div class="form-group">
+            <label for="stock">Stock (Unidades Disponibles):</label>
+            <input type="number" id="stock" name="stock" min="0" value="{{ producto.stock if producto else '0' }}" required>
+        </div>
+
+        <button type="submit" class="btn">{{ accion }} Producto</button>
         <a href="/inicio" class="nav-button">Inicio</a>
         <a href="/logout" class="nav-button">Cerrar sesión</a>
-        </form>
+      </form>
     </div>
-</body>
+  </body>
 </html>
