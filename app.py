@@ -22,10 +22,11 @@ from dotenv import load_dotenv
 import os
 # conexion = psycopg2.connect(
 #     host='localhost',
-#     database='commerce',
+#     database='neondb',
 #     user='postgres',
 #     password=''
 # )
+
 load_dotenv()
 DATABASE_URL = os.environ.get('DATABASE_URL')
 conexion = psycopg2.connect(DATABASE_URL)
