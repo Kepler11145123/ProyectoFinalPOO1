@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Catálogo de Productos</title>
+    <!-- Es mejor tener un solo archivo CSS para los estilos generales como el header -->
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/style.css') }}">
+    <link rel="icon" href="../static/imagenes/icons8-illuminati-symbol-48.png">
+    
+
+  </head>
+  <body>
+    <header class="header">
+      <!-- ¡ESTE ES EL CONTENEDOR CLAVE! -->
+      <div class="header-container">
+        <div class="header-left">
+          <span>Hola, {{ nombre }}</span>
+          <!-- Unifiqué la clase a .nav-button para consistencia -->
+          <a href="/inicio" class="nav-button">Inicio</a>
+        </div>
+        <div class="header-right">
+          <!-- También usa la clase .nav-button -->
+           {% if current_user.rol == 'administrador' %}
+          <a href="/panel_admin" class="nav-button">Panel de Administrador</a>
+          {% endif %}
+          <a href="/logout" class="nav-button logout"
+            >Cerrar sesión</a>
+        </div>
+      </div>
+    </header>
+
+    <div class="contenedor-catalogo">
+      <h1>Nuestro Catálogo</h1>
+      <div class="product-grid">
+        {% for producto in productos %}
+        <div class="product-card">
+          <img
+            src="{{ producto['nombre_columna_imagen'] }}"
+            alt="Imagen de {{ producto['nombre'] }}"
+          />
+
+          <div class="card-content">
+            <h3 class="product-name">{{ producto['nombre'] }}</h3>
+            <span class="product-category">{{ producto['categoria'] }}</span>
+            <p class="product-description">{{ producto['descripcion'] }}</p>
+            <button class="add-to-cart-btn">Agregar al Carrito</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </body>
+</html>

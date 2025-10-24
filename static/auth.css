@@ -1,0 +1,223 @@
+/* --- Importación de Fuente Moderna --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+/* --- General (HTML/Body) --- */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  /* Fondo de gradiente animado */
+  background-color: #ffffff;
+  background-size: 200% 200%;
+  animation: gradientMove 2s ease infinite;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden; /* Evita scrollbars */
+}
+
+/* Animación del fondo */
+/*@keyframes gradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+} */
+
+/* --- Contenedor del Formulario (Glassmorphism) --- */
+form {
+  /* Efecto "cristal" */
+  background: #637AB988;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px); /* Safari */
+  
+  padding: 2.5rem 3rem;
+  border-radius: 15px;
+  /* Sombra suave para dar profundidad */
+
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: 350px;
+  text-align: left;
+  animation: fadeIn 0.5s ease-out; /* Animación de entrada */
+}
+
+/* Animación de entrada (la tenías en registro.css) */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* --- Títulos --- */
+h2 {
+  text-align: center;
+  color: #31326F;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* --- Etiquetas (Labels) --- */
+label {
+  display: block;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+/* --- Campos de Entrada (Inputs) --- */
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+  box-sizing: border-box; /* Previene desbordamiento */
+  transition: all 0.3s ease;
+}
+
+/* Efecto de Foco en Inputs */
+input:focus {
+  border-color: #4FB7B3;
+  outline: none;
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+}
+
+/* --- Botón Principal --- */
+button {
+  background-color: rgb(76, 175, 167);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 600;
+  width: 100%;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Efecto Hover en Botón */
+button:hover {
+  background-color: #4583a0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px); /* Efecto "levantar" */
+}
+
+button:active {
+  transform: translateY(0); /* Efecto "presionar" */
+}
+
+/* --- Enlaces (párrafos de "ir a...") --- */
+p {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #333; /* Color de texto base para el párrafo */
+}
+
+p a {
+  color: #31326F;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.3s ease;
+}
+
+p a:hover {
+  text-decoration: underline;
+  color: #4CAF50;
+}
+
+/* --- Mensajes de Error (para el login) --- */
+.mensaje-error {
+  color: #D8000C;
+  background-color: #FFD2D2;
+  border: 1px solid #D8000C;
+  padding: 10px;
+  border-radius: 5px;
+  text-align: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+/* --- Mensajes de Éxito (para recuperar.html) --- */
+.mensaje-exito {
+  text-align: center;
+  color: #2e8b57;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+/* ... (todos tus estilos anteriores) ... */
+
+/* --- Mensaje de Éxito Flotante (para la pág. de login) --- */
+.mensaje-exito-flotante {
+  color: #2e8b57;
+  background-color: #dff0d8;
+  border: 1px solid #c3e6cb;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin-bottom: 1.5rem; /* Lo separa del formulario de abajo */
+  font-weight: 600;
+  width: 410px; /* Ancho similar al formulario (350px + padding) */
+  box-sizing: border-box;
+  
+  /* Animación para que aparezca suavemente */
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* --- Contenedor Principal (centra todo) --- */
+.contenedor-principal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px; /* Espacio entre el mensaje y el formulario */
+  height: 100vh;
+}
+
+/* ... (todos tus estilos anteriores) ... */
+
+/* --- Estilo para la lista de errores de contraseña --- */
+.mensaje-error-lista {
+  color: #D8000C;
+  background-color: #FFD2D2;
+  border: 1px solid #D8000C;
+  padding: 10px 15px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+}
+
+.mensaje-error-lista strong {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 5px;
+}
+
+/* Estilo de la lista de errores */
+.mensaje-error-lista ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.mensaje-error-lista li {
+  margin-bottom: 3px;
+}
+
+h3 {
+  font-family: sans-serif;
+  color: #31326F;
+  margin: 0;
+  text-align: center;
+}

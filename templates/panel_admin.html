@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administrador</title>
+    
+    <!-- Enlazamos los archivos de estilo -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='../static/panel_admin.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='imagenes/icons8-illuminati-symbol-48.png') }}">
+</head>
+<body>
+
+    <!-- 1. Header consistente con el resto de tu web -->
+    <header class="header">
+      <div class="header-container">
+        <div class="header-left">
+          <span>Panel de Admin: {{ current_user.nombre }}</span>
+        </div>
+        <div class="header-right">
+          <a href="{{ url_for('catalogo') }}" class="nav-button">Ver Tienda</a>
+          <a href="{{ url_for('logout') }}" class="nav-button logout">Cerrar sesión</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- 2. Contenido principal del panel -->
+    <main class="admin-container">
+      <h1>Gestión de Productos</h1>
+      
+      <!-- Botón para ir al formulario de crear nuevo producto -->
+      <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">Añadir Nuevo Producto</a>
+
+      <!-- 3. La tabla para mostrar todos los productos -->
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Categoría</th>
+            <th>Imagen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- 4. Bucle Jinja2 para recorrer la lista de productos -->
+          {% for producto in productos %}
+          <tr>
+            <td>{{ producto.id }}</td>
+            <td>{{ producto.nombre }}</td>
+            <td>{{ producto.descripcion }}</td>
+            <td>{{ producto.categoria }}</td>
+            <!-- Mostramos la imagen en tamaño pequeño -->
+            <td><img src="{{ producto.nombre_columna_imagen }}" alt="Imagen de {{ producto.nombre }}" width="80"></td>
+            
+            <!-- 5. Botones de Editar y Eliminar para CADA producto -->
+            <td class="actions">
+              <a href="{{ url_for('editar_producto', id=producto.id) }}" class="btn btn-warning">Editar</a>
+              <form action="{{ url_for('eliminar_producto', id=producto.id) }}" method="POST" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </main>
+
+</body>
+</html>

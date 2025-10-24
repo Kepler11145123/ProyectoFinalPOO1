@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Login</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='auth.css') }}"
+    />
+    <link rel="icon" href="../static/imagenes/icons8-illuminati-symbol-48.png">
+  </head>
+  <body> 
+    <div class ="contenedor-principal">
+    <!--! Mensaje de éxito con flash de Flask !-->
+    {% with messages = get_flashed_messages(with_categories = True) %}
+      {%  if messages %}
+        {% for category, message in messages %}
+          {% if category == 'success' %}
+            <p class ="mensaje-exito-flotante">{{ message }}</p>
+          {% endif%}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <!--! Formulario de inicio de sesión !-->
+    <form method="POST" action="/login">
+      <h2>Inicio de sesión</h2>
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+
+      {% if mensaje %}
+        <p class="mensaje-error">{{ mensaje }}</p>
+      {% endif %}
+
+      <label>Correo:</label>
+      <input type="email" name="correo" required /><br />
+      <label>Contraseña:</label>
+      <input type="password" name="contraseña" required /><br />
+      <button type="submit">Ingresar</button>
+
+      <p>¿No tienes cuenta? <a href="/registro">Regístrate aquí</a></p>
+      <p><a href="/recuperar">¿Olvidaste tu contraseña?</a></p>
+    </form>
+    </div>
+  </body>
+</html>

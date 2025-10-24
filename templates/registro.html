@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Registro</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='auth.css') }}"
+    />
+    <link rel="icon" href="../static/imagenes/icons8-illuminati-symbol-48.png">
+  </head>
+  <body>
+    
+    <form method="POST" action="/registro">
+      <h2>Registro de Usuario</h2>
+      <input type = "hidden" name ="csrf_token" value = "{{csrf_token()}}">
+      
+      {% if mensaje_error %}
+      <p class="mensaje-error">{{ mensaje_error }}</p>
+      {% endif %}
+
+      {% if mensaje_error_pass %}
+      <div class ="mensaje-error-lista">
+        <strong> La contraseña no cumple con los parámetros de seguridad, crea una contraseña más segura.</strong>
+        <ul>
+          {%for error in mensaje_erorr_pass %}
+          <li>{{ error }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+      <label>Nombre:</label>
+      <input type="text" name="nombre" value="{{ nombre or ''}}" required placeholder="John Doe"/><br />
+
+      <label>Correo:</label>
+      <input type="email" name="correo" value="{{ correo or ''}}" required placeholder="ejemplo@gmail.com"/><br />
+
+      <label>Contraseña:</label>
+      <small>Debe contener Mayúsculas, minúsculas, números y caracteres especiales.</small>
+      <input type="password" name="contraseña" id="contraseña" required placeholder="Contraseña"/><br />
+
+      <label>Confirmar contraseña:</label>
+      <input type="password" name="confirmar_contraseña" id="confirmar_contraseña" required placeholder="Confirma tu contraseña"/><br />
+
+      <button type="submit">Registrar</button>
+
+      <p>¿Ya tienes cuenta? <a href="/">Inicia sesión</a></p>
+    </form>
+    
+  </body>
+</html>

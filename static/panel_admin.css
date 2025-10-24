@@ -1,0 +1,108 @@
+/* --- ESTILOS GENERALES DEL PANEL --- */
+.admin-container {
+  max-width: 1200px;
+  margin: 2rem auto;
+  padding: 0 2rem;
+}
+
+.admin-container h1 {
+  text-align: center;
+  color: #333;
+  margin-bottom: 1.5rem;
+  font-weight: 600;
+}
+
+/* --- BOTONES PRINCIPALES (Añadir Producto, etc.) --- */
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  border: none;
+}
+
+.btn-primary {
+  background-color: #2e8b57; /* Un verde oscuro */
+  color: white;
+  margin-bottom: 1.5rem; /* Espacio debajo del botón */
+}
+
+.btn-primary:hover {
+  background-color: #256d45;
+}
+
+/* --- TABLA DE GESTIÓN DE PRODUCTOS --- */
+.product-table {
+  width: 100%;
+  border-collapse: collapse; /* Une los bordes de las celdas */
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  background-color: #fff;
+  border-radius: 10px;
+  overflow: hidden; /* Para que el borde redondeado funcione */
+}
+
+.product-table tbody tr {
+
+  border-left: 3px solid transparent; 
+  border-right: 3px solid transparent;
+  transition: all 0.3s ease; /* Transición suave */
+}
+
+.product-table tbody tr:hover {
+  background-color: #f0f0f0; /* Un fondo sutil para resaltar */
+  border-left-color: #2e8b57; /* Usa el color verde de tu tema */
+  border-right-color: #2e8b57;
+}
+
+
+
+.product-table th,
+.product-table td {
+  padding: 15px;
+  text-align: left;
+  border-bottom: 0 solid #ddd;
+  vertical-align: middle;
+}
+
+.product-table th {
+  background-color: #f4f7f6;
+  font-weight: 600;
+  color: #333;
+}
+
+/* Estilo para las filas impares para mejor legibilidad */
+.product-table tbody tr:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+
+.product-table img {
+  max-width: 80px;
+  border-radius: 6px;
+}
+
+/* --- BOTONES DE ACCIONES (Editar, Eliminar) --- */
+.actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #212121;
+}
+.btn-warning:hover {
+  background-color: #e0a800;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+.btn-danger:hover {
+  background-color: #c82333;
+}

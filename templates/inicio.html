@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Papas y limon</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='../static/inicio.css') }}">
+</head>
+    <link rel="icon" href="../static/imagenes/icons8-illuminati-symbol-48.png">
+  </head>
+  <body>
+    <header class="header">
+      <a href="/inicio" class="logo">Blasmefaus</a>
+      <div class="user-info">
+        <span>Hola, {{ nombre }}</span>
+        <a href="/logout" class="logout-button">Cerrar Sesión</a>
+
+      </div>
+    </header>
+
+    <div class="contenedor">
+      <h2>Bienvenido, {{ nombre }}</h2>
+      <p>Has iniciado sesión correctamente.</p>
+      <p>Podrás gestionar tu carrito de compras en próximas actualizaciones.</p>
+    <a href="/catalogo" class="ir-catalogo"> Ver Catálogo de Productos</a>
+    </div>
+    
+  </body>
+</html>

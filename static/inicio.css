@@ -1,0 +1,152 @@
+/* --- Importación de Fuente Moderna --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #f4f7f6; /* Un gris muy claro */
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+/* --- Header / Barra de Navegación --- */
+.header {
+  background-color: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  padding: 1rem 4rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0;
+}
+
+.header .logo {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #2e8b57;
+  text-decoration: none;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.header span {
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem; /* Espacio entre "Hola, luisa" y el botón "Inicio" */
+}
+
+.header-left span {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #333;
+}
+
+/* --- Botón de Cerrar Sesión --- */
+.logout-button {
+  background-color: #637AB9; /* Rojo para "salir" */
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none; /* Para la etiqueta <a> */
+  transition: all 0.3s ease;
+}
+.logout-button:hover {
+  background-color: #31326F;
+
+}
+
+.Inicio-button {
+  background-color: #637AB9;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.Inicio-button:hover {
+  background-color: #31326F;
+}
+
+.Inicio-butt {
+  background-color: #637AB9;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.Inicio-butt:hover {
+  background-color: #31326F;
+}
+
+
+/* --- Contenedor Principal (el .contenedor de inicio.html) --- */
+.contenedor {
+  max-width: 900px;
+  margin: 3rem auto; /* Más espacio superior */
+  padding: 2.5rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.contenedor h2 {
+  color: #2e8b57;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.contenedor p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #555;
+}
+
+.ir-catalogo {
+  text-align: center;
+}
+
+/* ... (tu css de inicio) ... */
+
+.ir-catalogo {
+  display: inline-block;
+  background-color: #637AB9;
+  color: white;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  margin-top: 1rem;
+  transition: all 0.3s ease;
+}
+
+.ir-catalogo:hover {
+  background-color: #31326F;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}

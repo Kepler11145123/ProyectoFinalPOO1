@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Recuperar Contraseña</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='auth.css') }}"
+    />
+    <link rel="icon" href="../static/imagenes/icons8-illuminati-symbol-48.png">
+  </head>
+  <body>
+    <form method="POST" action="/recuperar">
+      <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
+      <h2>Restablecer Contraseña</h2>
+
+      {% if mensaje %}
+      <p class="mensaje-exito">{{ mensaje }}</p>
+      {% else %}
+      <p>Ingresa el correo de tu usuario y la nueva contraseña.</p>
+      {% endif %}
+
+      <label>Correo:</label>
+      <input type="email" name="correo" required placeholder="Tu correo"/><br />
+      <label>Nueva contraseña:</label>
+      <input type="password" name="contraseña" required placeholder="Ejemplo Aa12345."/><br />
+      <label>Confirmar contraseña:</label>
+      <input type="password" name="confirmar" required placeholder="Confirmar contraseña" /><br />
+      <h3>Tu contraseña debe contener al menos 8 caracteres, Mayúsculas, minúsculas, números, caracteres especiales.</h3>
+      <button type="submit">Confirmar</button>
+
+      <p>¿Recordaste tu contraseña? <a href="/">Inicia sesión</a></p>
+    </form>
+  </body>
+</html>
