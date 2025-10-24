@@ -23,12 +23,12 @@
           id="nombre"
           name="nombre"
           value="{{ producto.nombre if producto else '' }}"
-          required
+          required placeholder="Nombre"
         />
 
         <label for="descripcion">Descripción:</label>
-        <textarea id="descripcion" name="descripcion" required>
-{{ producto.descripcion if producto else '' }}</textarea
+        <textarea class ="text" id="descripcion" name="descripcion" required placeholder="Añade una descripcion de tu producto">
+        {{ producto.descripcion if producto else '' }}</textarea
         >
 
         <label for="categoria">Categoría:</label>
@@ -38,6 +38,7 @@
           name="categoria"
           value="{{ producto.categoria if producto else '' }}"
           required
+          placeholder=""
         />
 
         <label for="imagen_url">URL de la Imagen:</label>

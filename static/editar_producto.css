@@ -9,11 +9,11 @@ body {
 
 /* --- Contenedor del Formulario --- */
 .form-container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 40px auto;
   padding: 35px;
   background-color: #ffffff;
-  border-radius: 12px;
+  border-radius: 11px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
 }
 
@@ -39,7 +39,7 @@ body {
 
 .form-group input[type="text"],
 .form-group input[type="number"],
-.form-group textarea {
+.form-group textarea{
   width: 100%;
   padding: 12px;
   font-size: 16px;
@@ -47,6 +47,13 @@ body {
   border-radius: 8px;
   box-sizing: border-box; /* Importante para que el padding no afecte el ancho */
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.text {
+    min-width: 100%;
+    resize: vertical;
+    min-height: 100px;
+    max-height: 200px;
 }
 
 .form-group input:focus,
@@ -95,4 +102,21 @@ body {
 
 .btn-danger {
   background-color: #dc3545; /* Rojo para acciones peligrosas o de salida */
+}
+
+.nav-button {
+  background-color: #637AB9;
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.nav-button:hover {
+  background-color: #31326F;
 }
