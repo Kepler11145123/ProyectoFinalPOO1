@@ -4,8 +4,9 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_wtf.csrf import CSRFProtect
 import psycopg2
 from psycopg2.extras import DictCursor
-from models import Usuario, Cliente, Administrador
+
 from werkzeug.security import generate_password_hash, check_password_hash
+
 
 
 
@@ -16,94 +17,68 @@ app.secret_key = '00000'
 csrf = CSRFProtect(app)
 #Login manager
 login_manager = LoginManager(app)
-login_manager.login_view = 'login'
+login_manager.login_view = 'inicio'
 
 from dotenv import load_dotenv
 import os
-# conexion = psycopg2.connect(
-#     host='localhost',
-#     database='neondb',
-#     user='postgres',
-#     password=''
-# )
+
+from models.entities.usuario import Usuario, Cliente, Administrador
+from models.UserModel import UserModel
+from models.ProductoModel import ProductoModel
+from models.entities.producto import Producto
 
 load_dotenv()
 DATABASE_URL = os.environ.get('DATABASE_URL')
 conexion = psycopg2.connect(DATABASE_URL)
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def inicio():
+    if request.method == 'POST':
+        # Crear la entidad de usuario con los datos del formulario
+        user_entity = Usuario(None, None, request.form['correo'], request.form['contraseña'])
+        
+        # El modelo se encarga de la lógica de autenticación
+        logged_user = UserModel.login(conexion, user_entity)
+        
+        if logged_user:
+            login_user(logged_user)
+            if logged_user.rol == 'administrador':
+                return redirect(url_for('panel_admin'))
+            else:
+                return redirect(url_for('pagina_inicio')) # Asumiendo que esta es tu página principal para clientes
+        else:
+            flash('Correo o contraseña incorrectos.', 'danger')
+            # Si falla el login, volvemos a mostrar la misma página de login
+            return render_template('login.html') 
+            
+    # Para el método GET
+    if current_user.is_authenticated:
+        # Si ya está logueado, lo mandamos a su página correspondiente
+        if current_user.rol == 'administrador':
+            return redirect(url_for('panel_admin'))
+        else:
+            return redirect(url_for('pagina_inicio'))
+    
+    # Si no está logueado y es GET, simplemente mostramos la página de login
     return render_template('login.html')
 
-@app.route('/login', methods =['POST'])
-def login():
-    correo = request.form['correo']
-    contraseña_formulario = request.form['contraseña']
-    cursor = conexion.cursor(cursor_factory=DictCursor)
-    cursor.execute("SELECT * FROM usuarios WHERE correo = %s", (correo,))
-    datos_usuario = cursor.fetchone()
-    cursor.close()
+# Puedes eliminar la ruta @app.route('/login') separada si la tenías, 
+# ya que ahora está integrada en la ruta raíz.
 
-    if datos_usuario:
-        if datos_usuario['rol'] == 'administrador':
-            usuario = Administrador(datos_usuario['id'], datos_usuario['nombre'], datos_usuario['correo'], datos_usuario['contraseña'], datos_usuario['rol'])
-        else: #si no es admin, es cliente
-            usuario = Cliente(datos_usuario['id'], datos_usuario['nombre'], datos_usuario['correo'], datos_usuario['contraseña'], datos_usuario['rol'])
 
-        if check_password_hash(usuario.password, contraseña_formulario):
-            login_user(usuario)
-
-            if usuario.rol == 'administrador':
-                return redirect(url_for('panel_admin'))
-            else: 
-                return redirect(url_for('pagina_inicio'))
-        else:
-            flash('Contraseña incorrecta.', 'danger')
-            return redirect(url_for('login'))
-    else:
-        flash('Usuario no encontrado.', 'danger')
-        return redirect(url_for('login'))
 
 @login_manager.user_loader
 def load_user(user_id):
-    # Usa DictCursor para acceder a los datos por nombre, es más seguro.
-    cursor = conexion.cursor(cursor_factory=DictCursor)
-    cursor.execute("SELECT * FROM usuarios WHERE id = %s", (user_id,))
-    datos_usuario = cursor.fetchone()
-    cursor.close()
-
-    if datos_usuario:
-        # Revisa el rol y crea el objeto correcto.
-        if datos_usuario['rol'] == 'administrador':
-            return Administrador(
-                id=datos_usuario['id'],
-                nombre=datos_usuario['nombre'],
-                correo=datos_usuario['correo'],
-                password=datos_usuario['contraseña'],
-                rol=datos_usuario['rol']
-            )
-        else:
-            return Cliente(
-                id=datos_usuario['id'],
-                nombre=datos_usuario['nombre'],
-                correo=datos_usuario['correo'],
-                password=datos_usuario['contraseña'],
-                rol=datos_usuario['rol']
-            )
-    return None
+    # El modelo se encarga de buscar al usuario por su ID
+    return UserModel.get_by_id(conexion, user_id)
 
 @app.route('/panel_admin')
 @login_required
 def panel_admin():
     if current_user.rol != 'administrador':
-        flash('Acceso no autorizado.', 'danger')
         return redirect(url_for('pagina_inicio'))
     
-    cursor = conexion.cursor(cursor_factory=DictCursor)
-    cursor.execute("SELECT * FROM categoria ORDER BY id ASC")
-    productos = cursor.fetchall()
-    cursor.close()
-
+    productos = ProductoModel.get_all_products(conexion)
     return render_template('panel_admin.html', productos=productos)
 
 def validar_contraseña(contraseña):
@@ -126,23 +101,19 @@ def nuevo_producto():
         return redirect(url_for('pagina_inicio'))
     
     if request.method == 'POST':
-        nombre = request.form['nombre']
-        descripcion = request.form['descripcion']
-        categoria = request.form['categoria']
-        imagen_url = request.form['imagen_url']
-        precio = request.form['precio']
-        stock = request.form['stock']
-
-        cursor = conexion.cursor()
-        cursor.execute(
-            "INSERT INTO categoria (nombre, descripcion, categoria, nombre_columna_imagen, precio, stock) VALUES (%s, %s, %s, %s, %s, %s)",
-            (nombre, descripcion, categoria, imagen_url, precio, stock)
+        nuevo = Producto(
+            id=None, nombre=request.form['nombre'], descripcion=request.form['descripcion'],
+            categoria=request.form['categoria'], imagen_url=request.form['imagen_url'],
+            precio=request.form['precio'], stock=request.form['stock']
         )
-        conexion.commit()
-        flash('Producto añadido correctamente', 'sucess')
-        return redirect(url_for('panel_admin'))
-    
-    return render_template('form_producto.html', accion = 'Crear', producto=None)
+        try:
+            ProductoModel.create_product(conexion, nuevo)
+            flash('Producto añadido correctamente.', 'success')
+            return redirect(url_for('panel_admin'))
+        except Exception as e:
+            flash(f"Error al crear el producto: {e}", 'danger')
+
+    return render_template('form_producto.html', accion='Crear', producto=None)
 
 @app.route('/admin/producto/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -150,28 +121,22 @@ def editar_producto(id):
     if current_user.rol != 'administrador':
         return redirect(url_for('pagina_inicio'))
     
-    cursor = conexion.cursor(cursor_factory=DictCursor)
     if request.method == 'POST':
-        nombre = request.form['nombre']
-        descripcion = request.form['descripcion']
-        categoria = request.form['categoria']
-        imagen_url = request.form['imagen_url']
-        precio = request.form['precio']
-        stock = request.form['stock']
-
-        cursor.execute (
-            "UPDATE categoria SET nombre = %s, descripcion = %s, categoria = %s, nombre_columna_imagen = %s, precio = %s, stock =%s WHERE id = %s",
-            (nombre, descripcion, categoria, imagen_url, precio, stock, id)
+        producto_actualizado = Producto(
+            id=id, nombre=request.form['nombre'], descripcion=request.form['descripcion'],
+            categoria=request.form['categoria'], imagen_url=request.form['imagen_url'],
+            precio=request.form['precio'], stock=request.form['stock']
         )
-        conexion.commit()
-        cursor.close()
-        flash('Producto actualizado correctamente', 'sucess')
-        return redirect(url_for('panel_admin'))
+        try:
+            ProductoModel.update_product(conexion, producto_actualizado)
+            flash('Producto actualizado correctamente.', 'success')
+            return redirect(url_for('panel_admin'))
+        except Exception as e:
+            flash(f"Error al actualizar: {e}", 'danger')
     
-    cursor.execute("SELECT * FROM categoria WHERE id =%s", (id,))
-    producto = cursor.fetchone()
-    cursor.close()
-    return render_template('form_producto.html', accion='Editar', producto=producto)
+    # Para el método GET, obtenemos el producto y lo mostramos en el formulario
+    producto_a_editar = ProductoModel.get_product_by_id(conexion, id)
+    return render_template('form_producto.html', accion='Editar', producto=producto_a_editar)
     
 @app.route('/admin/producto/eliminar/<int:id>', methods=['POST'])
 @login_required
@@ -179,51 +144,43 @@ def eliminar_producto(id):
     if current_user.rol != 'administrador':
         return redirect(url_for('pagina_inicio'))
     
-    cursor = conexion.cursor()
-    cursor.execute("DELETE FROM categoria WHERE id = %s", (id,))
-    conexion.commit()
-    flash('Elemento eliminado correctamente', 'danger')
+    try:
+        ProductoModel.delete_product(conexion, id)
+        flash('Producto eliminado correctamente.', 'success')
+    except Exception as e:
+        flash(f"Error al eliminar: {e}", 'danger')
+    
     return redirect(url_for('panel_admin'))
         
 
 
-@app.route('/registro', methods=['GET','POST'])
+@app.route('/registro', methods=['GET', 'POST'])
 def registro():
     if request.method == 'POST':
         nombre = request.form['nombre']
         correo = request.form['correo']
         contraseña = request.form['contraseña']
-        #*Confirmar contraseña
         confirmar_contraseña = request.form['confirmar_contraseña']
-        #Verificar si coinciden, si no coinciden recarga la página pero sin perder la información ingresada
+
         if contraseña != confirmar_contraseña:
-            return render_template('registro.html',
-                                   mensaje_error="Las contraseñas no coinciden.",
-                                   nombre = nombre,
-                                   correo = correo)
-        errores_pass = validar_contraseña(contraseña)
-        if errores_pass:
-        #Si hay errores se recarga y muestra el error
-            return render_template('registro.html', 
-                                   mensaje_error_pass=errores_pass,
-                                   nombre=nombre, 
-                                   correo=correo)
-        #Verificar correo duplicado
-        cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM usuarios WHERE correo=%s", (correo,))
-        if cursor.fetchone():
-            return render_template('registro.html',
-                                   mensaje_error="El correo ya está registrado.",
-                                   nombre = nombre,
-                                   correo = correo)
+            flash('Las contraseñas no coinciden.', 'danger')
+            return render_template('registro.html', nombre=nombre, correo=correo)
         
-        hash_contraseña = generate_password_hash(contraseña)   
-        cursor.execute("INSERT INTO usuarios (nombre, correo, contraseña) VALUES (%s, %s, %s)", 
-                   (nombre, correo, hash_contraseña))
-        conexion.commit()
+        # Hashear la contraseña ANTES de pasarla al modelo
+        hash_contraseña = generate_password_hash(contraseña)
         
-        flash('Te has registrado exitosamente! Ahora puedes iniciar sesión.','success')
-        return redirect('/')
+        # Crear la entidad de usuario
+        new_user = Usuario(id=None, nombre=nombre, correo=correo, password=hash_contraseña)
+
+        try:
+            # Delegar la creación al modelo
+            UserModel.create_user(conexion, new_user)
+            flash('¡Te has registrado exitosamente! Ahora puedes iniciar sesión.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            # El modelo lanzará una excepción si el correo ya existe
+            flash(str(e), 'danger')
+            return render_template('registro.html', nombre=nombre, correo=correo)
 
     return render_template('registro.html')
 
@@ -236,16 +193,10 @@ def pagina_inicio():
 @login_required
 def catalogo():
     try:
-        cursor = conexion.cursor(cursor_factory=DictCursor)
-
-        cursor.execute("SELECT id, nombre, nombre_columna_imagen, descripcion, categoria FROM categoria")
-
-        productos = cursor.fetchall()
-        cursor.close()
-        return render_template('catalogo.html', productos = productos, nombre=current_user.nombre)
-
+        productos = ProductoModel.get_all_products(conexion)
+        return render_template('catalogo.html', productos=productos, nombre=current_user.nombre)
     except Exception as e:
-        print(f"Error al consultar el catálogo: {e}")
+        flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
         return redirect(url_for('pagina_inicio'))
 
 @app.route('/logout')
@@ -258,30 +209,28 @@ def logout():
 def recuperar():
     if request.method == 'POST':
         correo = request.form['correo']
-        passwordnew = request.form['contraseña']
+        password_new = request.form['contraseña']
         confirmar = request.form['confirmar']
 
-        cursor = conexion.cursor()
-        cursor.execute("SELECT * FROM usuarios WHERE correo=%s", (correo,))
-        usuario = cursor.fetchone()
+        if password_new != confirmar:
+            flash('Las contraseñas no coinciden.', 'danger')
+            return render_template('recuperar.html', correo=correo)
 
-        if passwordnew != confirmar:
-            return render_template('recuperar.html',
-                                   mensaje_error="Las contraseñas no coinciden.",
-                                   correo = correo,)
+        # Hashear la nueva contraseña
+        hash_nueva_contraseña = generate_password_hash(password_new)
         
-        errores_pass = validar_contraseña(passwordnew)
-        if errores_pass:
-            return render_template('recuperar.html',
-                                   mensaje_error="Las contraseñas no coinciden.",
-                                   correo = correo)
+        # Crear una entidad temporal para la actualización
+        user_to_update = Usuario(id=None, nombre=None, correo=correo, password=hash_nueva_contraseña)
 
-        hash_nueva_contraseña = generate_password_hash(passwordnew)
-        cursor.execute("UPDATE usuarios SET contraseña = %s WHERE correo = %s", (hash_nueva_contraseña, correo))
-        conexion.commit()
-
-        flash('Has cambiado tu contraseña exitosamente, ahora puedes iniciar sesión.','success')
-        return redirect('/')
+        try:
+            # Delegar la actualización al modelo
+            UserModel.update_password(conexion, user_to_update)
+            flash('Has cambiado tu contraseña exitosamente. Ahora puedes iniciar sesión.', 'success')
+            return redirect(url_for('login'))
+        except Exception as e:
+            flash(f"Error al recuperar contraseña: {str(e)}", 'danger')
+            return render_template('recuperar.html', correo=correo)
+            
     return render_template('recuperar.html')
 
 
