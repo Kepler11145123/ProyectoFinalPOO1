@@ -68,7 +68,7 @@ def login():
         try:
             conexion = get_db()
             correo = request.form['correo']
-            password = request.form['password']
+            password = request.form['contraseña']
             
             logged_user = UserModel.login(conexion, correo, password)
             if logged_user:
