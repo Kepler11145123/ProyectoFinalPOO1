@@ -54,45 +54,62 @@ def inicio():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    """Maneja el inicio de sesión de usuarios."""
+    
+    # ⚠️ IMPORTANTE: Verificar si ya está logueado
+    if current_user.is_authenticated:
+        if current_user.rol == 'administrador':
+            return redirect(url_for('panel_admin'))
+        else:
+            return redirect(url_for('catalogo'))
+    
     if request.method == 'POST':
         try:
             conexion = get_db()
             
-            # ✅ Usar 'contraseña' que coincide con el HTML
-            correo = request.form['correo']
-            contraseña = request.form['contraseña']
+            # Obtener datos del formulario
+            correo = request.form.get('correo', '').strip()
+            contrasena = request.form.get('contraseña', '').strip()
             
-            # ✅ Crear un objeto Usuario temporal
+            # Validar campos no vacíos
+            if not correo or not contrasena:
+                flash("Por favor completa todos los campos.", "warning")
+                return render_template('login.html')
+            
+            # ✅ Crear objeto Usuario con paréntesis cerrado
             usuario_temporal = Usuario(
-                id=None, 
-                nombre=None, 
-                correo=correo, 
-                password=contraseña
-            )
+                id=None,
+                nombre=None,
+                correo=correo,
+                password=contrasena
+            )  # ← PARÉNTESIS CERRADO
             
-            # ✅ Pasar el objeto al método (2 args: conexion, usuario_temporal)
+            # Intentar login
             logged_user = UserModel.login(conexion, usuario_temporal)
             
             if logged_user:
+                # Login exitoso
                 login_user(logged_user)
                 flash(f"¡Bienvenido, {logged_user.nombre}!", "success")
                 
-                # Redirigir según el rol del usuario
+                # Redirigir según rol
                 if logged_user.rol == 'administrador':
                     return redirect(url_for('panel_admin'))
                 else:
                     return redirect(url_for('catalogo'))
             else:
-                flash("Correo o contraseña incorrectos.", "warning")
+                # Credenciales incorrectas
+                flash("Correo o contraseña incorrectos.", "danger")
                 return render_template('login.html')
                 
         except Exception as ex:
             app.logger.error(f"Error durante el login: {ex}")
-            flash("Ocurrió un error inesperado. Inténtelo más tarde.", "danger")
+            flash("Error inesperado. Intenta de nuevo.", "danger")
             return render_template('login.html')
     
-    # Si es GET, mostrar la página de login
+    # GET: Mostrar formulario
     return render_template('login.html')
+
 
 @app.route('/logout')
 @login_required
