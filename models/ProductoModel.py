@@ -43,7 +43,7 @@ class ProductoModel:
                         nombre=row[1],
                         descripcion=row[2],
                         categoria=row[3],
-                        imagen_url=row[4],
+                        nombre_columna_imagen=row[4],
                         precio=row[5],
                         stock=row[6]
                     )
@@ -69,7 +69,7 @@ class ProductoModel:
                 producto_entity.nombre, 
                 producto_entity.descripcion, 
                 producto_entity.categoria, 
-                producto_entity.imagen_url, 
+                producto_entity.nombre_columna_imagen, 
                 producto_entity.precio, 
                 producto_entity.stock
             )
@@ -103,7 +103,7 @@ class ProductoModel:
                            WHERE id = %s"""
             datos = (
                 producto_entity.nombre, producto_entity.descripcion, producto_entity.categoria,
-                producto_entity.imagen_url, producto_entity.precio, producto_entity.stock,
+                producto_entity.nombre_columna_imagen, producto_entity.precio, producto_entity.stock,
                 producto_entity.id
             )
             cursor.execute(sql_query, datos)
