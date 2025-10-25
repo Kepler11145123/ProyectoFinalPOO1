@@ -160,7 +160,7 @@ def validar_contraseña(contraseña):
 
 @app.route('/producto/nuevo', methods=['GET', 'POST'])
 @login_required
-def anadir_producto():
+def nuevo_producto():
     # Verificar permisos de administrador
     if current_user.rol != 'administrador':
         flash("No tienes permisos para añadir productos.", "danger")
