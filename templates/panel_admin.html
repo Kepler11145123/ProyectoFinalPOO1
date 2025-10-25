@@ -6,8 +6,8 @@
     <title>Panel de Administrador</title>
     
     <!-- Enlazamos los archivos de estilo -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='../static/style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='../static/panel_admin.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='panel_admin.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='imagenes/icons8-illuminati-symbol-48.png') }}">
 </head>
 <body>
@@ -57,7 +57,7 @@
             <td>{{ producto.precio }}</td>
             <td>{{ producto.stock }}</td>
 
-            <td><img src="{{ url_for('static', filename=producto.nombre_columna_imagen.replace('static/', '')) }}" alt="Imagen de {{ producto.nombre }}" width="80"></td>
+            <td><img src="{{ producto.imagen_url }}" alt="Imagen de {{ producto.nombre }}" width="80"></td>
             <!-- Mostramos la imagen en tamaño pequeño -->
             
             <!-- 5. Botones de Editar y Eliminar para CADA producto -->

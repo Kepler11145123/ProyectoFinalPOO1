@@ -3,11 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carrito</title>
-    <link rel="stylesheet" href ="{{ url_for('static', filename='../static/carrito.css')}}">
-    <link rel="icon" href="../static/imagenes/icons8-illuminati-symbol-48.png">
+    <title>Carrito de Compras</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='carrito.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='imagenes/icons8-illuminati-symbol-48.png') }}">
 </head>
 <body>
-    
+    <header class="header">
+        <div class="header-container">
+            <div class="header-left">
+                <span>Hola, {{ nombre }}</span>
+                <a href="/catalogo" class="nav-button">Volver al Catálogo</a>
+            </div>
+            <div class="header-right">
+                <a href="/logout" class="nav-button logout">Cerrar sesión</a>
+            </div>
+        </div>
+    </header>
+
+    <div class="cart-page">
+        <h1>🛒 Carrito de Compras</h1>
+        
+        {% if session.carrito %}
+        <div class="cart-items-list">
+            {% for item in session.carrito %}
+            <div class="cart-item-page">
+                <img src="{{ item.imagen }}" alt="{{ item.nombre }}" class="cart-item-image">
+                <div class="cart-item-info">
+                    <h3>{{ item.nombre }}</h3>
+                    <p class="cart-item-price-page">${{ "%.2f"|format(item.precio) }}</p>
+                    <p class="cart-item-quantity-page">Cantidad: {{ item.cantidad }}</p>
+                    <p>Subtotal: ${{ "%.2f"|format(item.precio * item.cantidad) }}</p>
+                </div>
+                <form method="POST" action="{{ url_for('eliminar_del_carrito', producto_id=item.id) }}" style="display: inline;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="cart-summary">
+            <h3>Resumen del Pedido</h3>
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span>${{ "%.2f"|format(total_carrito) }}</span>
+            </div>
+            <div class="summary-row">
+                <span>Envío:</span>
+                <span>Gratis</span>
+            </div>
+            <div class="summary-row total">
+                <span>Total:</span>
+                <span>${{ "%.2f"|format(total_carrito) }}</span>
+            </div>
+        </div>
+
+        <div class="cart-actions-page">
+            <a href="{{ url_for('catalogo') }}" class="btn btn-secondary">Continuar Comprando</a>
+            <form method="POST" action="{{ url_for('limpiar_carrito') }}" style="display: inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                <button type="submit" class="btn btn-danger">Limpiar Carrito</button>
+            </form>
+            <button class="btn btn-primary" onclick="alert('¡Funcionalidad de pago en desarrollo!')">Proceder al Pago</button>
+        </div>
+        {% else %}
+        <div class="empty-cart-page">
+            <h2>Tu carrito está vacío</h2>
+            <p>¡Agrega algunos productos para comenzar tu compra!</p>
+            <a href="{{ url_for('catalogo') }}" class="btn btn-primary">Ir al Catálogo</a>
+        </div>
+        {% endif %}
+    </div>
 </body>
 </html>

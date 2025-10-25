@@ -235,6 +235,7 @@ def editar_producto(id):
             precio = request.form.get('precio', type=float)
             stock = request.form.get('stock', type=int)
             
+            
             # Validaciones
             if not nombre or not precio or precio <= 0:
                 flash("Datos inválidos. Verifica el formulario.", "danger")
@@ -317,16 +318,131 @@ def registro():
 def pagina_inicio():
     return render_template('inicio.html', nombre=current_user.nombre)
 
-@app.route('/catalogo')
+@app.route('/catalogo', methods=['GET', 'POST'])
 @login_required
 def catalogo():
     conexion = get_db()
+    
+    # Inicializar carrito en la sesión si no existe
+    if 'carrito' not in session:
+        session['carrito'] = []
+    
+    # Manejar agregar al carrito
+    if request.method == 'POST':
+        id_producto = request.form.get('product_id', type=int)
+        if id_producto:
+            try:
+                producto = ProductoModel.get_product_by_id(conexion, id_producto)
+                if producto:
+                    # Verificar si el producto ya está en el carrito
+                    producto_en_carrito = False
+                    for item in session['carrito']:
+                        if item['id'] == id_producto:
+                            item['cantidad'] += 1
+                            producto_en_carrito = True
+                            break
+                    
+                    if not producto_en_carrito:
+                        # Agregar nuevo producto al carrito
+                        session['carrito'].append({
+                            'id': producto.id,
+                            'nombre': producto.nombre,
+                            'precio': float(producto.precio),
+                            'imagen': producto.imagen_url,
+                            'cantidad': 1
+                        })
+                    
+                    session.modified = True
+                    flash(f"{producto.nombre} agregado al carrito", "success")
+            except Exception as e:
+                flash(f"Error al agregar producto: {str(e)}", 'danger')
+    
     try:
         productos = ProductoModel.get_all_products(conexion)
-        return render_template('catalogo.html', productos=productos, nombre=current_user.nombre)
+        total_carrito = calcular_total_carrito(session.get('carrito', []))
+        return render_template('catalogo.html', productos=productos, nombre=current_user.nombre, total_carrito=total_carrito)
     except Exception as e:
         flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
         return redirect(url_for('inicio'))
+
+@app.route('/carrito')
+@login_required
+def ver_carrito():
+    total_carrito = calcular_total_carrito(session.get('carrito', []))
+    return render_template('carrito_compras.html', nombre=current_user.nombre, total_carrito=total_carrito)
+
+@app.route('/carrito/agregar', methods=['POST'])
+@login_required
+def agregar_al_carrito():
+    id_producto = request.form.get('product_id', type=int)
+    if not id_producto:
+        flash("ID de producto no válido", "danger")
+        return redirect(url_for('catalogo'))
+    
+    try:
+        conexion = get_db()
+        producto = ProductoModel.get_product_by_id(conexion, id_producto)
+        
+        if not producto:
+            flash("Producto no encontrado", "danger")
+            return redirect(url_for('catalogo'))
+        
+        # Inicializar carrito si no existe
+        if 'carrito' not in session:
+            session['carrito'] = []
+        
+        # Verificar si el producto ya está en el carrito
+        producto_en_carrito = False
+        for item in session['carrito']:
+            if item['id'] == id_producto:
+                item['cantidad'] += 1
+                producto_en_carrito = True
+                break
+        
+        if not producto_en_carrito:
+            # Agregar nuevo producto al carrito
+            session['carrito'].append({
+                'id': producto.id,
+                'nombre': producto.nombre,
+                'precio': float(producto.precio),
+                'imagen': producto.imagen_url,
+                'cantidad': 1
+            })
+        
+        session.modified = True
+        flash(f"{producto.nombre} agregado al carrito", "success")
+        
+    except Exception as e:
+        flash(f"Error al agregar producto: {str(e)}", 'danger')
+    
+    return redirect(url_for('catalogo'))
+
+@app.route('/carrito/eliminar/<int:producto_id>', methods=['POST'])
+@login_required
+def eliminar_del_carrito(producto_id):
+    if 'carrito' in session:
+        session['carrito'] = [item for item in session['carrito'] if item['id'] != producto_id]
+        session.modified = True
+        flash("Producto eliminado del carrito", "success")
+    
+    return redirect(url_for('ver_carrito'))
+
+@app.route('/carrito/limpiar', methods=['POST'])
+@login_required
+def limpiar_carrito():
+    session['carrito'] = []
+    session.modified = True
+    flash("Carrito limpiado", "success")
+    return redirect(url_for('ver_carrito'))
+
+def calcular_total_carrito(carrito):
+    """Calcula el total del carrito correctamente"""
+    if not carrito:
+        return 0
+    total = 0
+    for item in carrito:
+        total += item['precio'] * item['cantidad']
+    return total
 
 @app.route('/recuperar', methods=['GET', 'POST'])
 def recuperar():
@@ -353,6 +469,8 @@ def recuperar():
             return render_template('recuperar.html', correo=correo)
             
     return render_template('recuperar.html')
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
