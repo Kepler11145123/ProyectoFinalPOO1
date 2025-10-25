@@ -20,7 +20,7 @@ class ProductoModel:
                         precio=row[5],
                         stock=row[6]
                     )
-                    producto.append(Producto)
+                    productos.append(producto)
                 # ... (resto de tu lógica para crear la lista de productos)
             return productos
         except Exception as ex:
