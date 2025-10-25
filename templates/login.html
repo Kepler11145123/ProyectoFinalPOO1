@@ -22,7 +22,7 @@
       {% endif %}
     {% endwith %}
     <!--! Formulario de inicio de sesión !-->
-    <form method="POST" action="{{ url_for('inicio')}}">
+    <form method="POST" action="{{ url_for('login')}}">
       <h2>Inicio de sesión</h2>
       <input type="hidden" name="csrf_token" value="{{csrf_token()}}" />
 
