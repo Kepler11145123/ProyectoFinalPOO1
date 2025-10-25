@@ -175,7 +175,7 @@ def nuevo_producto():
             nombre = request.form.get('nombre', '').strip()
             descripcion = request.form.get('descripcion', '').strip()
             categoria = request.form.get('categoria', '').strip()
-            imagen_url = request.form.get('imagen_url', '').strip()
+            nombre_columna_imagen = request.form.get('nombre_columna_imagen', '').strip()
             precio = request.form.get('precio', type=float)
             stock = request.form.get('stock', type=int)
             
@@ -199,7 +199,7 @@ def nuevo_producto():
                 nombre=nombre,
                 descripcion=descripcion,
                 categoria=categoria,
-                imagen_url=imagen_url,
+                nombre_columna_imagen=nombre_columna_imagen,
                 precio=precio,
                 stock=stock
             )
@@ -231,7 +231,7 @@ def editar_producto(id):
             nombre = request.form.get('nombre', '').strip()
             descripcion = request.form.get('descripcion', '').strip()
             categoria = request.form.get('categoria', '').strip()
-            imagen_url = request.form.get('imagen_url', '').strip()
+            nombre_columna_imagen = request.form.get('nombre_columna_imagen', '').strip()
             precio = request.form.get('precio', type=float)
             stock = request.form.get('stock', type=int)
             
@@ -246,7 +246,7 @@ def editar_producto(id):
                 nombre=nombre,
                 descripcion=descripcion,
                 categoria=categoria,
-                imagen_url=imagen_url,
+                nombre_columna_imagen=nombre_columna_imagen,
                 precio=precio,
                 stock=stock
             )
