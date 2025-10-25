@@ -51,11 +51,16 @@ def close_db(e=None):
 
 
 
+# VERSIÓN CORREGIDA Y RECOMENDADA
 @app.route('/')
 def inicio():
-    # Esta ruta no necesita la base de datos por ahora, pero si la necesitara:
-    # conexion = get_db()
-    return render_template('inicio.html')
+    # Si el usuario ya está logueado, llévalo a su panel o al catálogo.
+    if current_user.is_authenticated:
+        return redirect(url_for('catalogo')) # O 'panel_admin' si lo prefieres
+    
+    # Si no está logueado, envíalo directamente a la página de login.
+    return redirect(url_for('login'))
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
