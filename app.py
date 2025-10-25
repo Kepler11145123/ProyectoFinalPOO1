@@ -5,28 +5,21 @@ from flask_wtf.csrf import CSRFProtect
 import psycopg2
 from psycopg2.extras import DictCursor
 from werkzeug.security import generate_password_hash, check_password_hash
-
 from dotenv import load_dotenv
 import os
 import secrets
-
 from models.entities.usuario import Usuario, Cliente, Administrador
 from models.UserModel import UserModel
 from models.ProductoModel import ProductoModel
 from models.entities.producto import Producto
 
 load_dotenv()
-
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
 
-#Seguridad csrf
 csrf = CSRFProtect(app)
-#Login manager
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
-
-
 
 def get_db():
     if 'db' not in g:
@@ -49,9 +42,6 @@ def close_db(e=None):
     if db is not None:
         db.close()
         app.logger.info("Cerrando conexión a la base de datos.")
-
-
-
 # VERSIÓN CORREGIDA Y RECOMENDADA
 @app.route('/')
 def inicio():
@@ -61,7 +51,6 @@ def inicio():
     
     # Si no está logueado, envíalo directamente a la página de login.
     return redirect(url_for('login'))
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -105,8 +94,6 @@ def login():
     # Si es GET, mostrar la página de login
     return render_template('login.html')
 
-
-
 @app.route('/logout')
 @login_required
 def logout():
@@ -143,7 +130,6 @@ def panel_admin():
         app.logger.error(f"Error en panel_admin: {ex}")
         flash("Error al cargar el panel de administración.", "danger")
         return redirect(url_for('inicio'))
-
 
 def validar_contraseña(contraseña):
     #!Valida la contraseña con unos parámetros
@@ -200,7 +186,6 @@ def nuevo_producto():
                 precio=precio,
                 stock=stock
             )
-            
             # Guardar en base de datos
             conexion = get_db()
             ProductoModel.create_product(conexion, nuevo_producto)
@@ -212,11 +197,8 @@ def nuevo_producto():
             app.logger.error(f"Error al añadir producto: {ex}")
             flash("Error al añadir el producto.", "danger")
             return render_template('form_producto.html', accion='Añadir')
-    
     # GET: Mostrar formulario vacío
     return render_template('form_producto.html', accion='Añadir')
-
-
 
 @app.route('/admin/producto/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
@@ -226,7 +208,6 @@ def editar_producto(id):
         return redirect(url_for('catalogo'))
     
     conexion = get_db()
-    
     if request.method == 'POST':
         try:
             # Obtener datos del formulario
@@ -270,8 +251,6 @@ def editar_producto(id):
     
     return render_template('form_producto.html', accion='Editar', producto=producto_a_editar)
 
-
-    
 @app.route('/admin/producto/eliminar/<int:id>', methods=['POST'])
 @login_required
 
@@ -287,8 +266,6 @@ def eliminar_producto(id):
         flash(f"Error al eliminar: {e}", 'danger')
     
     return redirect(url_for('panel_admin'))
-        
-
 
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
@@ -303,9 +280,7 @@ def registro():
             flash('Las contraseñas no coinciden.', 'danger')
             return render_template('registro.html', nombre=nombre, correo=correo)
         
-        # Hashear la contraseña ANTES de pasarla al modelo
         hash_contraseña = generate_password_hash(contraseña)
-        
         # Crear la entidad de usuario
         new_user = Usuario(id=None, nombre=nombre, correo=correo, password=hash_contraseña)
 
@@ -315,7 +290,6 @@ def registro():
             flash('¡Te has registrado exitosamente! Ahora puedes iniciar sesión.', 'success')
             return redirect(url_for('login'))
         except Exception as e:
-            # El modelo lanzará una excepción si el correo ya existe
             flash(str(e), 'danger')
             return render_template('registro.html', nombre=nombre, correo=correo)
 
@@ -337,7 +311,6 @@ def catalogo():
         flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
         return redirect(url_for('inicio'))
 
-
 @app.route('/recuperar', methods=['GET', 'POST'])
 def recuperar():
     conexion = get_db()
@@ -350,10 +323,7 @@ def recuperar():
             flash('Las contraseñas no coinciden.', 'danger')
             return render_template('recuperar.html', correo=correo)
 
-        # Hashear la nueva contraseña
         hash_nueva_contraseña = generate_password_hash(password_new)
-        
-        # Crear una entidad temporal para la actualización
         user_to_update = Usuario(id=None, nombre=None, correo=correo, password=hash_nueva_contraseña)
 
         try:
@@ -366,13 +336,6 @@ def recuperar():
             return render_template('recuperar.html', correo=correo)
             
     return render_template('recuperar.html')
-
-
-    #cursor = conexion.cursor()
-    #cursor.execute("SELECT nombre_columna_imagen FROM categoria WHERE nombre='Luffy'",)
-    #if cursor.fetchone():
-        #return render_template
-
 
 if __name__ == '__main__':
     app.run(debug=True)
