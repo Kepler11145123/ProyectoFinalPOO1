@@ -6,15 +6,27 @@ class ProductoModel:
     def get_all_products(cls, db_connection):
         try: 
             cursor = db_connection.cursor()
-            cursor.execute("SELECT * FROM categoria ORDER BY nombre ASC")
+            cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, stock FROM productos ORDER BY id ASC")
             rows= cursor.fetchall()
+            cursor.close()
+
             productos = []
             for row in rows:
-                producto = Producto(row[0], row[1], row[2], row[3], row[4], row[5], row[6])
+                # Asegúrate que tu clase Producto coincida con estas columnas
+                producto = Producto(
+                    id=row[0],
+                    nombre=row[1],
+                    descripcion=row[2],
+                    categoria=row[3],
+                    nombre_columna_imagen=row[4],
+                    precio=row[5],
+                    stock=row[6]
+                )
                 productos.append(producto)
+            
             return productos
         except Exception as ex:
-            raise Exception(ex)
+            raise Exception(f"Error al obtener productos: {ex}")
     
     @classmethod
     def get_product_by_id(cls, db_connection, producto_id):

@@ -56,8 +56,9 @@
             <td>{{ producto.categoria }}</td>
             <td>{{ producto.precio }}</td>
             <td>{{ producto.stock }}</td>
+
+            <td><img src="{{ url_for('static', filename=producto.nombre_columna_imagen.replace('static/', '')) }}" alt="Imagen de {{ producto.nombre }}" width="80"></td>
             <!-- Mostramos la imagen en tamaño pequeño -->
-            <td><img src="{{ producto.nombre_columna_imagen }}" alt="Imagen de {{ producto.nombre }}" width="80"></td>
             
             <!-- 5. Botones de Editar y Eliminar para CADA producto -->
             <td class="actions">
