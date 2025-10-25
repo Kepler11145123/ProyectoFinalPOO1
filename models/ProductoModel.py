@@ -16,7 +16,7 @@ class ProductoModel:
                         nombre=row[1],
                         descripcion=row[2],
                         categoria=row[3],
-                        imagen_url=row[4],
+                        nombre_columna_imagen=row[4],
                         precio=row[5],
                         stock=row[6]
                     )
