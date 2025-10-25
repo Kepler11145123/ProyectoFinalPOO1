@@ -86,9 +86,6 @@ def logout():
     flash("Has cerrado sesión exitosamente.", "success")
     return redirect(url_for('login'))
 
-
-login_manager = LoginManager(app)
-
 @login_manager.user_loader
 def load_user(user_id):
     """
@@ -153,16 +150,16 @@ def anadir_producto():
 @app.route('/admin/producto/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_producto(id):
+    # Obtén la conexión UNA VEZ al principio de la función.
+    conexion = get_db() 
+    
     if current_user.rol != 'administrador':
         return redirect(url_for('pagina_inicio'))
     
     if request.method == 'POST':
-        producto_actualizado = Producto(
-            id=id, nombre=request.form['nombre'], descripcion=request.form['descripcion'],
-            categoria=request.form['categoria'], imagen_url=request.form['imagen_url'],
-            precio=request.form['precio'], stock=request.form['stock']
-        )
+        producto_actualizado = Producto(...)
         try:
+            # Ahora 'conexion' sí existe.
             ProductoModel.update_product(conexion, producto_actualizado)
             flash('Producto actualizado correctamente.', 'success')
             return redirect(url_for('panel_admin'))
@@ -172,10 +169,13 @@ def editar_producto(id):
     # Para el método GET, obtenemos el producto y lo mostramos en el formulario
     producto_a_editar = ProductoModel.get_product_by_id(conexion, id)
     return render_template('form_producto.html', accion='Editar', producto=producto_a_editar)
+
     
 @app.route('/admin/producto/eliminar/<int:id>', methods=['POST'])
 @login_required
+
 def eliminar_producto(id):
+    conexion = get_db()
     if current_user.rol != 'administrador':
         return redirect(url_for('pagina_inicio'))
     
@@ -191,6 +191,7 @@ def eliminar_producto(id):
 
 @app.route('/registro', methods=['GET', 'POST'])
 def registro():
+    conexion = get_db()
     if request.method == 'POST':
         nombre = request.form['nombre']
         correo = request.form['correo']
@@ -227,6 +228,7 @@ def pagina_inicio():
 @app.route('/catalogo')
 @login_required
 def catalogo():
+    conexion = get_db()
     try:
         productos = ProductoModel.get_all_products(conexion)
         return render_template('catalogo.html', productos=productos, nombre=current_user.nombre)
@@ -234,14 +236,10 @@ def catalogo():
         flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
         return redirect(url_for('pagina_inicio'))
 
-@app.route('/logout')
-@login_required
-def logout():
-    logout_user()
-    return redirect('/')
 
 @app.route('/recuperar', methods=['GET', 'POST'])
 def recuperar():
+    conexion = get_db()
     if request.method == 'POST':
         correo = request.form['correo']
         password_new = request.form['contraseña']
