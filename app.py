@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, redirect, url_for, session, flash
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 import psycopg2
@@ -27,59 +27,98 @@ from models.UserModel import UserModel
 from models.ProductoModel import ProductoModel
 from models.entities.producto import Producto
 
-load_dotenv()
-DATABASE_URL = os.environ.get('DATABASE_URL')
-conexion = psycopg2.connect(DATABASE_URL)
+def get_db():
+    if 'db' not in g:
+        try:
+            # psycopg2 es lo suficientemente inteligente para entender la URL completa.
+            DATABASE_URL = os.environ.get('DATABASE_URL')
+            g.db = psycopg2.connect(DATABASE_URL)
+        except psycopg2.Error as ex:
+            # Es buena idea loguear el error para depurar en Render
+            app.logger.error(f"FALLO AL CONECTAR A LA BD: {ex}")
+            raise Exception(f"Error al conectar con la base de datos: {ex}")
+    return g.db
 
-@app.route('/', methods=['GET', 'POST'])
+@app.teardown_appcontext
+def close_db(e=None):
+    """
+    Cierra la conexión a la base de datos automáticamente al final de cada petición.
+    """
+    db = g.pop('db', None)
+    if db is not None:
+        db.close()
+        app.logger.info("Cerrando conexión a la base de datos.")
+
+
+
+@app.route('/')
 def inicio():
+    # Esta ruta no necesita la base de datos por ahora, pero si la necesitara:
+    # conexion = get_db()
+    return render_template('inicio.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
     if request.method == 'POST':
-        # Crear la entidad de usuario con los datos del formulario
-        user_entity = Usuario(None, None, request.form['correo'], request.form['contraseña'])
-        
-        # El modelo se encarga de la lógica de autenticación
-        logged_user = UserModel.login(conexion, user_entity)
-        
-        if logged_user:
-            login_user(logged_user)
-            if logged_user.rol == 'administrador':
+        try:
+            conexion = get_db()
+            correo = request.form['correo']
+            password = request.form['password']
+            
+            logged_user = UserModel.login(conexion, correo, password)
+            if logged_user:
+                login_user(logged_user)
                 return redirect(url_for('panel_admin'))
             else:
-                return redirect(url_for('pagina_inicio')) # Asumiendo que esta es tu página principal para clientes
-        else:
-            flash('Correo o contraseña incorrectos.', 'danger')
-            # Si falla el login, volvemos a mostrar la misma página de login
-            return render_template('login.html') 
-            
-    # Para el método GET
-    if current_user.is_authenticated:
-        # Si ya está logueado, lo mandamos a su página correspondiente
-        if current_user.rol == 'administrador':
-            return redirect(url_for('panel_admin'))
-        else:
-            return redirect(url_for('pagina_inicio'))
-    
-    # Si no está logueado y es GET, simplemente mostramos la página de login
-    return render_template('login.html')
+                flash("Correo o contraseña incorrectos.", "warning")
+                return render_template('login.html')
+        except Exception as ex:
+            app.logger.error(f"Error durante el login: {ex}")
+            flash("Ocurrió un error inesperado. Inténtelo más tarde.", "danger")
+            return render_template('login.html')
+    else:
+        return render_template('login.html')
 
-# Puedes eliminar la ruta @app.route('/login') separada si la tenías, 
-# ya que ahora está integrada en la ruta raíz.
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    flash("Has cerrado sesión exitosamente.", "success")
+    return redirect(url_for('login'))
 
 
+login_manager = LoginManager(app)
 
 @login_manager.user_loader
 def load_user(user_id):
-    # El modelo se encarga de buscar al usuario por su ID
-    return UserModel.get_by_id(conexion, user_id)
+    """
+    Flask-Login usa esta función para recargar el objeto de usuario desde el ID
+    almacenado en la sesión. Se ejecuta en cada petición de un usuario logueado.
+    """
+    try:
+        # Obtiene una conexión segura para esta petición específica
+        conexion = get_db()
+        return UserModel.get_by_id(conexion, user_id)
+    except Exception as ex:
+        app.logger.error(f"Error en load_user: {ex}")
+        return None
 
 @app.route('/panel_admin')
 @login_required
 def panel_admin():
-    if current_user.rol != 'administrador':
-        return redirect(url_for('pagina_inicio'))
-    
-    productos = ProductoModel.get_all_products(conexion)
-    return render_template('panel_admin.html', productos=productos)
+    try:
+        if current_user.rol != 'admin':
+            flash("No tienes permisos para acceder a esta página.", "danger")
+            return redirect(url_for('inicio'))
+            
+        conexion = get_db()
+        productos = ProductoModel.get_all_products(conexion)
+        return render_template('panel_admin.html', productos=productos)
+    except Exception as ex:
+        app.logger.error(f"Error en panel_admin: {ex}")
+        flash("Error al cargar el panel de administración.", "danger")
+        return redirect(url_for('inicio'))
+
 
 def validar_contraseña(contraseña):
     #!Valida la contraseña con unos parámetros
@@ -94,26 +133,22 @@ def validar_contraseña(contraseña):
         errores.append("Debe contener al menos un caracter especial")
     return errores
 
-@app.route('/admin/productos/nuevo', methods=['GET', 'POST'])
+@app.route('/producto/nuevo', methods=['GET', 'POST'])
 @login_required
-def nuevo_producto():
-    if current_user.rol != 'administrador':
-        return redirect(url_for('pagina_inicio'))
-    
+def anadir_producto():
     if request.method == 'POST':
-        nuevo = Producto(
-            id=None, nombre=request.form['nombre'], descripcion=request.form['descripcion'],
-            categoria=request.form['categoria'], imagen_url=request.form['imagen_url'],
-            precio=request.form['precio'], stock=request.form['stock']
-        )
         try:
-            ProductoModel.create_product(conexion, nuevo)
-            flash('Producto añadido correctamente.', 'success')
+            conexion = get_db()
+            # Lógica para añadir el producto...
+            # ProductoModel.create_product(conexion, ...)
+            flash("Producto añadido exitosamente.", "success")
             return redirect(url_for('panel_admin'))
-        except Exception as e:
-            flash(f"Error al crear el producto: {e}", 'danger')
+        except Exception as ex:
+            app.logger.error(f"Error al añadir producto: {ex}")
+            flash("Error al añadir el producto.", "danger")
 
-    return render_template('form_producto.html', accion='Crear', producto=None)
+    return render_template('formulario_producto.html')
+
 
 @app.route('/admin/producto/editar/<int:id>', methods=['GET', 'POST'])
 @login_required

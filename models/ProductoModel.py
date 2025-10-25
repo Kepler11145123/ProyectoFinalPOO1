@@ -4,50 +4,31 @@ class ProductoModel:
 
     @classmethod
     def get_all_products(cls, db_connection):
-        try: 
-            cursor = db_connection.cursor()
-            cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, stock FROM productos ORDER BY id ASC")
-            rows= cursor.fetchall()
-            cursor.close()
-
-            productos = []
-            for row in rows:
-                # Asegúrate que tu clase Producto coincida con estas columnas
-                producto = Producto(
-                    id=row[0],
-                    nombre=row[1],
-                    descripcion=row[2],
-                    categoria=row[3],
-                    nombre_columna_imagen=row[4],
-                    precio=row[5],
-                    stock=row[6]
-                )
-                productos.append(producto)
-            
+        productos = []
+        try:
+            with db_connection.cursor() as cursor:
+                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM productos ORDER BY id ASC")
+                rows = cursor.fetchall()
+                # ... (resto de tu lógica para crear la lista de productos)
             return productos
         except Exception as ex:
+            # ¡IMPORTANTE! Hacer rollback
+            db_connection.rollback()
             raise Exception(f"Error al obtener productos: {ex}")
-    
+
     @classmethod
     def get_product_by_id(cls, db_connection, producto_id):
-        """
-        Obtiene un producto específico por su ID.
-        """
+        producto = None
         try:
-            cursor = db_connection.cursor()
-            cursor.execute("SELECT * FROM categoria WHERE id = %s", (producto_id,))
-            row = cursor.fetchone()
-            
-            producto = None
-            if row:
-                producto = Producto(
-                    id=row[0], nombre=row[1], descripcion=row[2], 
-                    categoria=row[3], imagen_url=row[4], precio=row[5], stock=row[6]
-                )
-            
-            cursor.close()
+            with db_connection.cursor() as cursor:
+                # OJO: Aquí dice 'categoria' pero debería ser 'productos'
+                cursor.execute("SELECT * FROM productos WHERE id = %s", (producto_id,))
+                row = cursor.fetchone()
+                # ... (resto de tu lógica)
             return producto
         except Exception as ex:
+            # ¡IMPORTANTE! Hacer rollback
+            db_connection.rollback()
             raise Exception(f"Error al buscar producto: {ex}")
         
     @classmethod

@@ -3,43 +3,54 @@ from models.entities.usuario import Usuario, Cliente, Administrador
 
 class UserModel:
 
+    # models/UserModel.py
+from werkzeug.security import check_password_hash
+from models.entities.usuario import Usuario, Cliente, Administrador
+
+class UserModel:
+
     @classmethod
     def get_by_id(cls, db_connection, user_id):
         """Obtiene un usuario por su ID"""
         try:
-            cursor = db_connection.cursor()
-            cursor.execute("SELECT id, nombre, correo, contraseña, rol FROM usuarios WHERE id = %s", (user_id,))
-            row = cursor.fetchone()
-            cursor.close()
+            # Usar 'with' es una buena práctica, cierra el cursor automáticamente
+            with db_connection.cursor() as cursor:
+                cursor.execute("SELECT id, nombre, correo, contraseña, rol FROM usuarios WHERE id = %s", (user_id,))
+                row = cursor.fetchone()
             
-            if row:
-                # NO pasamos row[4] (el rol) porque ya tiene valor por defecto
-                if row[4] == 'administrador':
-                    return Administrador(row[0], row[1], row[2], row[3])  # 4 valores
-                else:
-                    return Cliente(row[0], row[1], row[2], row[3])        # 4 valores
-            return None
+                if row:
+                    if row[4] == 'administrador':
+                        return Administrador(row[0], row[1], row[2], row[3])
+                    else:
+                        return Cliente(row[0], row[1], row[2], row[3])
+                return None
         except Exception as ex:
-            raise Exception(f"Error al obtener usuario: {ex}")
+            # ¡IMPORTANTE! Hacer rollback para limpiar la transacción fallida
+            db_connection.rollback()
+            raise Exception(f"Error al obtener usuario por ID: {ex}")
 
     @classmethod
     def login(cls, db_connection, user_entity):
         """Verifica credenciales y devuelve el usuario autenticado"""
         try:
-            cursor = db_connection.cursor()
-            cursor.execute("SELECT id, nombre, correo, contraseña, rol FROM usuarios WHERE correo = %s", (user_entity.correo,))
-            row = cursor.fetchone()
-            cursor.close()
+            with db_connection.cursor() as cursor:
+                cursor.execute("SELECT id, nombre, correo, contraseña, rol FROM usuarios WHERE correo = %s", (user_entity.correo,))
+                row = cursor.fetchone()
             
-            if row and check_password_hash(row[3], user_entity.password):
-                # NO pasamos row[4] (el rol) porque ya tiene valor por defecto
-                if row[4] == 'administrador':
-                    return Administrador(row[0], row[1], row[2], row[3])  # 4 valores
-                else:
-                    return Cliente(row[0], row[1], row[2], row[3])        # 4 valores
-            return None
+                if row and check_password_hash(row[3], user_entity.password):
+                    if row[4] == 'administrador':
+                        return Administrador(row[0], row[1], row[2], row[3])
+                    else:
+                        return Cliente(row[0], row[1], row[2], row[3])
+                return None
         except Exception as ex:
+            # ¡IMPORTANTE! Hacer rollback aquí también
+            db_connection.rollback()
             raise Exception(f"Error en login: {ex}")
+
+    # Los métodos create_user y update_password ya tenían rollback, ¡así que están bien!
+    # ... (resto de tus métodos sin cambios si ya tienen rollback)
+
 
     @classmethod
     def create_user(cls, db_connection, new_user_entity):
