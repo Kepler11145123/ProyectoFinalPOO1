@@ -17,7 +17,7 @@ app.secret_key = '00000'
 csrf = CSRFProtect(app)
 #Login manager
 login_manager = LoginManager(app)
-login_manager.login_view = 'inicio'
+login_manager.login_view = 'login'
 
 from dotenv import load_dotenv
 import os
