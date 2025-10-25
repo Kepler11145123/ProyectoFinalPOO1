@@ -9,6 +9,18 @@ class ProductoModel:
             with db_connection.cursor() as cursor:
                 cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM productos ORDER BY id ASC")
                 rows = cursor.fetchall()
+
+                for row in rows:
+                    producto = producto(
+                        id=row[0],
+                        nombre=row[1],
+                        descripcion=row[2],
+                        categoria=row[3],
+                        imagen_url=row[4],
+                        precio=row[5],
+                        stock=row[6]
+                    )
+                    producto.append(producto)
                 # ... (resto de tu lógica para crear la lista de productos)
             return productos
         except Exception as ex:
@@ -22,9 +34,20 @@ class ProductoModel:
         try:
             with db_connection.cursor() as cursor:
                 # OJO: Aquí dice 'categoria' pero debería ser 'productos'
-                cursor.execute("SELECT * FROM productos WHERE id = %s", (producto_id,))
+                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM productos WHERE id = %s", (producto_id,))
                 row = cursor.fetchone()
-                # ... (resto de tu lógica)
+
+                if row:
+                    producto = producto(
+                        id=row[0],
+                        nombre=row[1],
+                        descripcion=row[2],
+                        categoria=row[3],
+                        imagen_url=row[4],
+                        precio=row[5],
+                        stock=row[6]
+                    )
+
             return producto
         except Exception as ex:
             # ¡IMPORTANTE! Hacer rollback
