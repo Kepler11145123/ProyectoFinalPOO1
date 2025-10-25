@@ -67,22 +67,44 @@ def login():
     if request.method == 'POST':
         try:
             conexion = get_db()
-            correo = request.form['correo']
-            password = request.form['contraseña']
             
-            logged_user = UserModel.login(conexion, correo, password)
+            # ✅ Usar 'contraseña' que coincide con el HTML
+            correo = request.form['correo']
+            contrasena = request.form['contraseña']
+            
+            # ✅ Crear un objeto Usuario temporal
+            usuario_temporal = Usuario(
+                id=None, 
+                nombre=None, 
+                correo=correo, 
+                password=contrasena
+            )
+            
+            # ✅ Pasar el objeto al método (2 args: conexion, usuario_temporal)
+            logged_user = UserModel.login(conexion, usuario_temporal)
+            
             if logged_user:
                 login_user(logged_user)
-                return redirect(url_for('panel_admin'))
+                flash(f"¡Bienvenido, {logged_user.nombre}!", "success")
+                
+                # Redirigir según el rol del usuario
+                if logged_user.rol == 'administrador':
+                    return redirect(url_for('panel_admin'))
+                else:
+                    return redirect(url_for('catalogo'))
             else:
                 flash("Correo o contraseña incorrectos.", "warning")
                 return render_template('login.html')
+                
         except Exception as ex:
             app.logger.error(f"Error durante el login: {ex}")
             flash("Ocurrió un error inesperado. Inténtelo más tarde.", "danger")
             return render_template('login.html')
-    else:
-        return render_template('login.html')
+    
+    # Si es GET, mostrar la página de login
+    return render_template('login.html')
+
+
 
 @app.route('/logout')
 @login_required
