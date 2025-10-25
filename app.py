@@ -4,21 +4,8 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_wtf.csrf import CSRFProtect
 import psycopg2
 from psycopg2.extras import DictCursor
-
+import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
-
-
-
-
-app = Flask(__name__)
-app.secret_key = '00000'
-
-#Seguridad csrf
-csrf = CSRFProtect(app)
-#Login manager
-login_manager = LoginManager(app)
-login_manager.login_view = 'login'
-
 from dotenv import load_dotenv
 import os
 
@@ -26,6 +13,19 @@ from models.entities.usuario import Usuario, Cliente, Administrador
 from models.UserModel import UserModel
 from models.ProductoModel import ProductoModel
 from models.entities.producto import Producto
+
+load_dotenv()
+
+app = Flask(__name__)
+app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+
+#Seguridad csrf
+csrf = CSRFProtect(app)
+#Login manager
+login_manager = LoginManager(app)
+login_manager.login_view = 'login'
+
+
 
 def get_db():
     if 'db' not in g:
@@ -160,42 +160,115 @@ def validar_contraseña(contraseña):
 @app.route('/producto/nuevo', methods=['GET', 'POST'])
 @login_required
 def anadir_producto():
+    # Verificar permisos de administrador
+    if current_user.rol != 'administrador':
+        flash("No tienes permisos para añadir productos.", "danger")
+        return redirect(url_for('catalogo'))
+    
     if request.method == 'POST':
         try:
+            # Obtener datos del formulario
+            nombre = request.form.get('nombre', '').strip()
+            descripcion = request.form.get('descripcion', '').strip()
+            categoria = request.form.get('categoria', '').strip()
+            imagen_url = request.form.get('imagen_url', '').strip()
+            precio = request.form.get('precio', type=float)
+            stock = request.form.get('stock', type=int)
+            
+            # Validaciones
+            errores = []
+            if not nombre:
+                errores.append("El nombre es obligatorio.")
+            if not precio or precio <= 0:
+                errores.append("El precio debe ser mayor a 0.")
+            if stock is None or stock < 0:
+                errores.append("El stock no puede ser negativo.")
+            
+            if errores:
+                for error in errores:
+                    flash(error, "danger")
+                return render_template('form_producto.html', accion='Añadir')
+            
+            # Crear objeto Producto
+            nuevo_producto = Producto(
+                id=None,
+                nombre=nombre,
+                descripcion=descripcion,
+                categoria=categoria,
+                imagen_url=imagen_url,
+                precio=precio,
+                stock=stock
+            )
+            
+            # Guardar en base de datos
             conexion = get_db()
-            # Lógica para añadir el producto...
-            # ProductoModel.create_product(conexion, ...)
+            ProductoModel.create_product(conexion, nuevo_producto)
+            
             flash("Producto añadido exitosamente.", "success")
             return redirect(url_for('panel_admin'))
+            
         except Exception as ex:
             app.logger.error(f"Error al añadir producto: {ex}")
             flash("Error al añadir el producto.", "danger")
+            return render_template('form_producto.html', accion='Añadir')
+    
+    # GET: Mostrar formulario vacío
+    return render_template('form_producto.html', accion='Añadir')
 
-    return render_template('formulario_producto.html')
 
 
 @app.route('/admin/producto/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
 def editar_producto(id):
-    # Obtén la conexión UNA VEZ al principio de la función.
-    conexion = get_db() 
-    
     if current_user.rol != 'administrador':
-        return redirect(url_for('pagina_inicio'))
+        flash("No tienes permisos para editar productos.", "danger")
+        return redirect(url_for('catalogo'))
+    
+    conexion = get_db()
     
     if request.method == 'POST':
-        producto_actualizado = Producto(...)
         try:
-            # Ahora 'conexion' sí existe.
+            # Obtener datos del formulario
+            nombre = request.form.get('nombre', '').strip()
+            descripcion = request.form.get('descripcion', '').strip()
+            categoria = request.form.get('categoria', '').strip()
+            imagen_url = request.form.get('imagen_url', '').strip()
+            precio = request.form.get('precio', type=float)
+            stock = request.form.get('stock', type=int)
+            
+            # Validaciones
+            if not nombre or not precio or precio <= 0:
+                flash("Datos inválidos. Verifica el formulario.", "danger")
+                return redirect(url_for('editar_producto', id=id))
+            
+            # Crear objeto con datos actualizados
+            producto_actualizado = Producto(
+                id=id,
+                nombre=nombre,
+                descripcion=descripcion,
+                categoria=categoria,
+                imagen_url=imagen_url,
+                precio=precio,
+                stock=stock
+            )
+            
             ProductoModel.update_product(conexion, producto_actualizado)
             flash('Producto actualizado correctamente.', 'success')
             return redirect(url_for('panel_admin'))
+            
         except Exception as e:
-            flash(f"Error al actualizar: {e}", 'danger')
+            app.logger.error(f"Error al actualizar: {e}")
+            flash("Error al actualizar el producto.", 'danger')
+            return redirect(url_for('editar_producto', id=id))
     
-    # Para el método GET, obtenemos el producto y lo mostramos en el formulario
+    # GET: Obtener producto y mostrar formulario
     producto_a_editar = ProductoModel.get_product_by_id(conexion, id)
+    if not producto_a_editar:
+        flash("Producto no encontrado.", "warning")
+        return redirect(url_for('panel_admin'))
+    
     return render_template('form_producto.html', accion='Editar', producto=producto_a_editar)
+
 
     
 @app.route('/admin/producto/eliminar/<int:id>', methods=['POST'])
