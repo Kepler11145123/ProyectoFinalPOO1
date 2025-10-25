@@ -11,7 +11,7 @@ class ProductoModel:
                 rows = cursor.fetchall()
 
                 for row in rows:
-                    producto = producto(
+                    producto = Producto(
                         id=row[0],
                         nombre=row[1],
                         descripcion=row[2],
@@ -38,7 +38,7 @@ class ProductoModel:
                 row = cursor.fetchone()
 
                 if row:
-                    producto = producto(
+                    producto = Producto(
                         id=row[0],
                         nombre=row[1],
                         descripcion=row[2],
