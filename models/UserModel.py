@@ -3,12 +3,6 @@ from models.entities.usuario import Usuario, Cliente, Administrador
 
 class UserModel:
 
-    # models/UserModel.py
-from werkzeug.security import check_password_hash
-from models.entities.usuario import Usuario, Cliente, Administrador
-
-class UserModel:
-
     @classmethod
     def get_by_id(cls, db_connection, user_id):
         """Obtiene un usuario por su ID"""
