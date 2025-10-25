@@ -131,7 +131,7 @@ def load_user(user_id):
 @login_required
 def panel_admin():
     try:
-        if current_user.rol != 'admin':
+        if current_user.rol != 'administrador':
             flash("No tienes permisos para acceder a esta página.", "danger")
             return redirect(url_for('inicio'))
             
