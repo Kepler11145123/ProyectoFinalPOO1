@@ -327,6 +327,9 @@ def catalogo():
     if 'carrito' not in session:
         session['carrito'] = []
     
+    # Asegurar que la sesión sea persistente
+    session.permanent = True
+    
     # Manejar agregar al carrito
     if request.method == 'POST':
         id_producto = request.form.get('product_id', type=int)
@@ -348,7 +351,7 @@ def catalogo():
                             'id': producto.id,
                             'nombre': producto.nombre,
                             'precio': float(producto.precio),
-                            'imagen': producto.imagen_url,
+                            'imagen': producto.nombre_columna_imagen,
                             'cantidad': 1
                         })
                     
@@ -434,6 +437,7 @@ def limpiar_carrito():
     session.modified = True
     flash("Carrito limpiado", "success")
     return redirect(url_for('ver_carrito'))
+
 
 def calcular_total_carrito(carrito):
     """Calcula el total del carrito correctamente"""
