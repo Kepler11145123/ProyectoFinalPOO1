@@ -7,7 +7,7 @@ class ProductoModel:
         productos = []
         try:
             with db_connection.cursor() as cursor:
-                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM productos ORDER BY id ASC")
+                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM categoria ORDER BY id ASC")
                 rows = cursor.fetchall()
                 # ... (resto de tu lógica para crear la lista de productos)
             return productos
@@ -22,7 +22,7 @@ class ProductoModel:
         try:
             with db_connection.cursor() as cursor:
                 # OJO: Aquí dice 'categoria' pero debería ser 'productos'
-                cursor.execute("SELECT * FROM productos WHERE id = %s", (producto_id,))
+                cursor.execute("SELECT * FROM categoria WHERE id = %s", (producto_id,))
                 row = cursor.fetchone()
                 # ... (resto de tu lógica)
             return producto
