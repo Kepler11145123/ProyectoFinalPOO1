@@ -4,10 +4,11 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_wtf.csrf import CSRFProtect
 import psycopg2
 from psycopg2.extras import DictCursor
-import secrets
 from werkzeug.security import generate_password_hash, check_password_hash
+
 from dotenv import load_dotenv
 import os
+import secrets
 
 from models.entities.usuario import Usuario, Cliente, Administrador
 from models.UserModel import UserModel
@@ -70,14 +71,14 @@ def login():
             
             # ✅ Usar 'contraseña' que coincide con el HTML
             correo = request.form['correo']
-            contrasena = request.form['contraseña']
+            contraseña = request.form['contraseña']
             
             # ✅ Crear un objeto Usuario temporal
             usuario_temporal = Usuario(
                 id=None, 
                 nombre=None, 
                 correo=correo, 
-                password=contrasena
+                password=contraseña
             )
             
             # ✅ Pasar el objeto al método (2 args: conexion, usuario_temporal)
@@ -277,7 +278,7 @@ def editar_producto(id):
 def eliminar_producto(id):
     conexion = get_db()
     if current_user.rol != 'administrador':
-        return redirect(url_for('pagina_inicio'))
+        return redirect(url_for('inicio'))
     
     try:
         ProductoModel.delete_product(conexion, id)
@@ -334,7 +335,7 @@ def catalogo():
         return render_template('catalogo.html', productos=productos, nombre=current_user.nombre)
     except Exception as e:
         flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
-        return redirect(url_for('pagina_inicio'))
+        return redirect(url_for('inicio'))
 
 
 @app.route('/recuperar', methods=['GET', 'POST'])

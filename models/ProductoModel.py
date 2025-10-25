@@ -7,7 +7,7 @@ class ProductoModel:
         productos = []
         try:
             with db_connection.cursor() as cursor:
-                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM categoria ORDER BY id ASC")
+                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM productos ORDER BY id ASC")
                 rows = cursor.fetchall()
                 # ... (resto de tu lógica para crear la lista de productos)
             return productos
@@ -22,7 +22,7 @@ class ProductoModel:
         try:
             with db_connection.cursor() as cursor:
                 # OJO: Aquí dice 'categoria' pero debería ser 'productos'
-                cursor.execute("SELECT * FROM categoria WHERE id = %s", (producto_id,))
+                cursor.execute("SELECT * FROM productos WHERE id = %s", (producto_id,))
                 row = cursor.fetchone()
                 # ... (resto de tu lógica)
             return producto
@@ -37,7 +37,7 @@ class ProductoModel:
             cursor = db_connection.cursor()
             
             # 1. La consulta SQL para insertar un nuevo registro.
-            sql_query = """INSERT INTO categoria 
+            sql_query = """INSERT INTO productos 
                         (nombre, descripcion, categoria, nombre_columna_imagen, precio, stock) 
                         VALUES (%s, %s, %s, %s, %s, %s)"""
             
@@ -74,7 +74,7 @@ class ProductoModel:
         """
         try:
             cursor = db_connection.cursor()
-            sql_query = """UPDATE categoria 
+            sql_query = """UPDATE productos 
                            SET nombre = %s, descripcion = %s, categoria = %s, 
                                nombre_columna_imagen = %s, precio = %s, stock = %s 
                            WHERE id = %s"""
@@ -98,7 +98,7 @@ class ProductoModel:
         """
         try:
             cursor = db_connection.cursor()
-            cursor.execute("DELETE FROM categoria WHERE id = %s", (producto_id,))
+            cursor.execute("DELETE FROM productos WHERE id = %s", (producto_id,))
             db_connection.commit()
             cursor.close()
             return True
