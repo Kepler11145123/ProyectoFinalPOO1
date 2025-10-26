@@ -40,7 +40,7 @@
         {% if session.carrito %}
           {% for item in session.carrito %}
           <div class="cart-item">
-            <img src="{{ item.imagen }}" alt="{{ item.nombre }}" class="cart-item-image">
+            <img src="{{ nombre_columna_imagen }}" alt="{{ item.nombre }}" class="cart-item-image">
             <div class="cart-item-details">
               <h4>{{ item.nombre }}</h4>
               <p class="cart-item-price">${{ "%.2f"|format(item.precio) }}</p>
@@ -76,7 +76,7 @@
         {% for producto in productos %}
         <div class="product-card">
           <img
-            src="{{ producto.imagen_url }}"
+            src="{{ nombre_columna_imagen }}"
             alt="Imagen de {{ producto.nombre }}"
           />
 
