@@ -111,12 +111,16 @@ def login():
     return render_template('login.html')
 
 
+from flask import get_flashed_messages
+
 @app.route('/logout')
 @login_required
 def logout():
     logout_user()
+    get_flashed_messages()
     flash("Has cerrado sesión exitosamente.", "success")
     return redirect(url_for('login'))
+
 
 @login_manager.user_loader
 def load_user(user_id):
