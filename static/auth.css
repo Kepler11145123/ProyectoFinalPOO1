@@ -17,13 +17,6 @@ body {
   overflow: hidden; /* Evita scrollbars */
 }
 
-/* Animación del fondo */
-/*@keyframes gradientMove {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
-} */
-
 /* --- Contenedor del Formulario (Glassmorphism) --- */
 form {
   /* Efecto "cristal" */
@@ -156,9 +149,6 @@ p a:hover {
   font-weight: bold;
   margin-top: 10px;
 }
-
-/* ... (todos tus estilos anteriores) ... */
-
 /* --- Mensaje de Éxito Flotante (para la pág. de login) --- */
 .mensaje-exito-flotante {
   color: #2e8b57;
@@ -185,8 +175,6 @@ p a:hover {
   gap: 20px; /* Espacio entre el mensaje y el formulario */
   height: 100vh;
 }
-
-/* ... (todos tus estilos anteriores) ... */
 
 /* --- Estilo para la lista de errores de contraseña --- */
 .mensaje-error-lista {
