@@ -14,6 +14,7 @@ from models.ProductoModel import ProductoModel
 from models.CarritoModel import CarritoModel
 from models.entities.producto import Producto
 LOGIN_TEMPLATE = 'login.html'
+FORM_PRODUCTO_TEMPLATE = 'form_producto.html'
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
@@ -174,53 +175,77 @@ def nuevo_producto():
         flash("No tienes permisos para añadir productos.", "danger")
         return redirect(url_for('catalogo'))
     
-    if request.method == 'POST':
+    if request.method == 'GET':
+        return render_template(FORM_PRODUCTO_TEMPLATE, accion='Añadir')
+    
+    # POST: Procesar formulario
+    return _handle_create_product()
+
+def _handle_create_product():
         try:
-            # Obtener datos del formulario
-            nombre = request.form.get('nombre', '').strip()
-            descripcion = request.form.get('descripcion', '').strip()
-            categoria = request.form.get('categoria', '').strip()
-            nombre_columna_imagen = request.form.get('nombre_columna_imagen', '').strip()
-            precio = request.form.get('precio', type=float)
-            stock = request.form.get('stock', type=int)
-            
-            # Validaciones
-            errores = []
-            if not nombre:
-                errores.append("El nombre es obligatorio.")
-            if not precio or precio <= 0:
-                errores.append("El precio debe ser mayor a 0.")
-            if stock is None or stock < 0:
-                errores.append("El stock no puede ser negativo.")
-            
+            form_data = _get_product_form_data()
+
+            errores = _validate_product_data(form_data)
             if errores:
                 for error in errores:
                     flash(error, "danger")
-                return render_template('form_producto.html', accion='Añadir')
+                return render_template(FORM_PRODUCTO_TEMPLATE, accion = 'Añadir')
             
-            # Crear objeto Producto
-            nuevo_producto = Producto(
-                id=None,
-                nombre=nombre,
-                descripcion=descripcion,
-                categoria=categoria,
-                nombre_columna_imagen=nombre_columna_imagen,
-                precio=precio,
-                stock=stock
-            )
-            # Guardar en base de datos
-            conexion = get_db()
-            ProductoModel.create_product(conexion, nuevo_producto)
-            
-            flash("Producto añadido exitosamente.", "success")
+            _create_and_save_product(form_data)
+
+            flash("Producto añadido correctamente. ", "sucess")
             return redirect(url_for('panel_admin'))
-            
+        
         except Exception as ex:
             app.logger.error(f"Error al añadir producto: {ex}")
             flash("Error al añadir el producto.", "danger")
-            return render_template('form_producto.html', accion='Añadir')
-    # GET: Mostrar formulario vacío
-    return render_template('form_producto.html', accion='Añadir')
+            return render_template(FORM_PRODUCTO_TEMPLATE, accion='Añadir')
+
+def _get_product_form_data():
+    return {
+        'nombre': request.form.get('nombre','').strip(),
+        'descripcion': request.form.get('descripcion','').strip(),
+        'categoria': request.form.get('categoria','').strip(),
+        'nombre_columna_imagen': request.form.get('nombre_columna_imagen','').strip(),
+        'precio': request.form.get('precio',type=float),
+        'stock': request.form.get('stock',type=int)
+    }
+
+def _validate_product_data(form_data):
+    errores = []
+    if not _is_product_name_valid(form_data['nombre']):
+        errores.append("El nombre es obligatorio.")
+    
+    if not _is_product_price_valid(form_data['precio']):
+        errores.append("El precio debe ser mayor a 0.")
+    
+    if not _is_product_stock_valid(form_data['stock']):
+        errores.append("El stock no puede ser negativo.")
+
+    return errores
+
+def _is_product_name_valid(nombre):
+    return bool(nombre)
+
+def _is_product_price_valid(precio):
+    return precio is not None and precio > 0
+
+def _is_product_stock_valid(stock):
+    return stock is not None and stock >= 0
+
+def _create_and_save_product(form_data):
+    nuevo_producto = Producto (
+        id=None,
+        nombre=form_data['nombre'],
+        descripcion=form_data['descripcion'],
+        categoria=form_data['categoria'],
+        nombre_columna_imagen=form_data['nombre_columna_imagen'],
+        precio=form_data['precio'],
+        stock=form_data['stock']
+    )
+    conexion = get_db()
+    ProductoModel.create_product(conexion, nuevo_producto)
+
 
 @app.route('/admin/producto/editar/<int:id>', methods=['GET', 'POST'])
 @login_required
