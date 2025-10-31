@@ -158,16 +158,16 @@ def panel_admin():
         flash("Error al cargar el panel de administración.", "danger")
         return redirect(url_for('inicio'))
 
-def validar_contrasena(contraseña):
+def validar_contrasena(contrasena):
     #!Valida la contraseña con unos parámetros
     errores = []
-    if len(contraseña) <8:
+    if len(contrasena) <8:
         errores.append("Debe tener al menos 8 caracteres.")
-    if not re.search(r"[A-Z]", contraseña):
+    if not re.search(r"[A-Z]", contrasena):
         errores.append("Debe contener al menos una letra mayúscula.")
-    if not re.search(r"[0-9]", contraseña):
+    if not re.search(r"[0-9]", contrasena):
         errores.append("Debe contener al menos un número")
-    if not re.search(r"[\W_]", contraseña):
+    if not re.search(r"[\W_]", contrasena):
         errores.append("Debe contener al menos un caracter especial")
     return errores
 
@@ -325,16 +325,16 @@ def registro():
     if request.method == 'POST':
         nombre = request.form['nombre']
         correo = request.form['correo']
-        contraseña = request.form[FORM_CONTRASEÑA]
-        confirmar_contraseña = request.form['confirmar_contraseña']
+        contrasena = request.form[FORM_CONTRASEÑA]
+        confirmar_contrasena = request.form['confirmar_contraseña']
 
-        if contraseña != confirmar_contraseña:
+        if contrasena != confirmar_contrasena:
             flash('Las contraseñas no coinciden.', 'danger')
             return render_template(REGISTRO_TEMPLATE, nombre=nombre, correo=correo)
         
-        hash_contraseña = generate_password_hash(contraseña)
+        hash_contrasena = generate_password_hash(contrasena)
         # Crear la entidad de usuario
-        new_user = Usuario(id=None, nombre=nombre, correo=correo, password=hash_contraseña)
+        new_user = Usuario(id=None, nombre=nombre, correo=correo, password=hash_contrasena)
 
         try:
             # Delegar la creación al modelo
@@ -443,7 +443,7 @@ def recuperar():
             flash('Las contraseñas no coinciden.', 'danger')
             return render_template(RECUPERAR_TEMPLATE, correo=correo)
 
-        hash_nueva_contraseña = generate_password_hash(password_new)
+        hash_nueva_contrasena = generate_password_hash(password_new)
         user_to_update = Usuario(id=None, nombre=None, correo=correo, password=hash_nueva_contraseña)
 
         try:
