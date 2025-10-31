@@ -4,7 +4,7 @@
 /* --- Estilos Generales del Body --- */
 body {
   font-family: 'Poppins', sans-serif;
-  background-color: #f4f7f6; /* Un gris muy claro para el fondo */
+  background-color: #f4f7f6;
   margin: 0;
   padding: 0;
   color: #333;
@@ -13,7 +13,7 @@ body {
 .header {
   background-color: #fff;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  padding: 0 20px; /* Padding para los bordes en pantallas móviles */
+  padding: 0 20px;
   width: 100%;
 }
 
@@ -22,7 +22,7 @@ body {
   justify-content: space-between;
   align-items: center;
   max-width: 1200px;
-  margin: 0 auto; /* Centra el contenedor */
+  margin: 0 auto;
   padding: 1rem 0;
 }
 
@@ -54,7 +54,7 @@ body {
   background-color: #31326F;
 }
 
-/* --- ESTILOS PARA EL CATÁLOGO DE PRODUCTOS */
+/* --- ESTILOS PARA EL CATÁLOGO DE PRODUCTOS --- */
 
 .contenedor-catalogo {
   max-width: 1200px;
@@ -72,73 +72,100 @@ body {
 /* --- Cuadrícula de Productos (Responsive) --- */
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
 }
 
 /* --- Tarjeta de Producto Individual --- */
 .product-card {
   background-color: #fff;
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-height: 480px;
 }
 
 .product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
+/* --- IMAGEN DEL PRODUCTO (MEJORADA PARA VER CABEZA) --- */
 .product-card img {
   width: 100%;
-  height: 200px;
+  height: 280px;
   object-fit: cover;
+  object-position: center top; /* 👈 CLAVE: MUESTRA LA CABEZA */
+  background-color: #ffffff;
+  border-radius: 12px 12px 0 0;
+  transition: transform 0.3s ease;
 }
 
+.product-card:hover img {
+  transform: scale(1.03);
+}
+
+/* --- CONTENIDO DE LA TARJETA --- */
 .card-content {
-  padding: 1rem;
+  padding: 1.5rem;
   display: flex;
   flex-direction: column;
   flex-grow: 1;
+  gap: 0.5rem;
 }
 
 .product-name {
   font-size: 1.25rem;
   font-weight: 600;
   color: #2e8b57;
-  margin: 0 0 0.25rem 0;
+  margin: 0;
 }
 
 .product-category {
   font-size: 0.85rem;
   color: #777;
-  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
 }
 
 .product-description {
   font-size: 0.9rem;
   color: #555;
   flex-grow: 1;
-  margin-bottom: 1rem;
+  margin: 0.5rem 0;
+  line-height: 1.4;
 }
 
+.product-price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #2e8b57;
+  margin: 0.5rem 0;
+}
+
+/* --- BOTÓN AGREGAR AL CARRITO --- */
 .add-to-cart-btn {
   background-color: #4CAF50;
   color: white;
   border: none;
-  padding: 10px 15px;
+  padding: 12px 15px;
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
   font-weight: 600;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   margin-top: auto;
 }
 
 .add-to-cart-btn:hover {
   background-color: #45a049;
+  transform: scale(1.02);
 }
 
+.add-to-cart-btn:active {
+  transform: scale(0.98);
+}
