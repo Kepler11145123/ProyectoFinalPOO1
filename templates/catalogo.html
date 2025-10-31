@@ -115,7 +115,8 @@
           <div class="product-grid">
             {% for producto in productos %}
             <div class="product-card" data-category="{{ producto.categoria }}">
-              <img src="{{ producto.nombre_columna_imagen }}" alt="{{ producto.nombre }}"/>
+              <img src="{{ producto.nombre_columna_imagen }}" alt="Imagen del producto"/>
+
               <div class="card-content">
                 <h3 class="product-name">{{ producto.nombre }}</h3>
                 <span class="product-category">{{ producto.categoria }}</span>
