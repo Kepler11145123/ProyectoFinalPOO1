@@ -162,8 +162,8 @@
       function filterByCategory(category) {
         productCards.forEach(card => {
 
-          const cardCategory = card.dataset.cardd
-          const {cardd} = element.dataset
+          const cardCategory = card.dataset.card
+          const {card} = element.dataset
           
           if (category === 'todos' || cardCategory === category) {
             card.style.display = 'block';
@@ -185,8 +185,8 @@
       // Event listeners
       categoryBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-          const category = btn.dataset.btnn
-          const {btnn} = element.dataset
+          const category = btn.dataset.btn
+          const {btn} = element.dataset
           filterByCategory(category);
           
           // Cerrar sidebar en mobile
