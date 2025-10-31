@@ -56,63 +56,62 @@ def inicio():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Maneja el inicio de sesión de usuarios."""
-    
-    # ⚠️ IMPORTANTE: Verificar si ya está logueado
     if current_user.is_authenticated:
-        if current_user.rol == 'administrador':
-            return redirect(url_for('panel_admin'))
-        else:
-            return redirect(url_for('catalogo'))
+        return _redirect_authenticated_user()
     
     if request.method == 'POST':
-        try:
-            conexion = get_db()
-            
-            # Obtener datos del formulario
-            correo = request.form.get('correo', '').strip()
-            contrasena = request.form.get('contraseña', '').strip()
-            
-            # Validar campos no vacíos
-            if not correo or not contrasena:
-                flash("Por favor completa todos los campos.", "warning")
-                return render_template('login.html')
-            
-            # ✅ Crear objeto Usuario con paréntesis cerrado
-            usuario_temporal = Usuario(
-                id=None,
-                nombre=None,
-                correo=correo,
-                password=contrasena
-            )  # ← PARÉNTESIS CERRADO
-            
-            # Intentar login
-            logged_user = UserModel.login(conexion, usuario_temporal)
-            
-            if logged_user:
-                # Login exitoso
-                login_user(logged_user)
-                flash(f"¡Bienvenido, {logged_user.nombre}!", "success")
-                
-                # Redirigir según rol
-                if logged_user.rol == 'administrador':
-                    return redirect(url_for('panel_admin'))
-                else:
-                    return redirect(url_for('catalogo'))
-            else:
-                # Credenciales incorrectas
-                flash("Correo o contraseña incorrectos.", "danger")
-                return render_template('login.html')
-                
-        except Exception as ex:
-            app.logger.error(f"Error durante el login: {ex}")
-            flash("Error inesperado. Intenta de nuevo.", "danger")
-            return render_template('login.html')
+        return _handle_login_attemp()
     
-    # GET: Mostrar formulario
     return render_template('login.html')
 
+        #Funciones auxiliares 
 
-from flask import get_flashed_messages
+def _redirect_authenticated_user():
+    if current_user.rol == 'administrador':
+        return redirect(url_for('panel_admnin'))
+    return redirect(url_for('catalogo'))
+
+def _handle_login_attemp():
+    try:
+        correo, contrasena = _get_login_credentials()
+
+        if not _are_credentials_valid(correo, contrasena):
+            flash("Por favor completa todos los campos.", "warning")
+            return render_template('login.html')
+        
+        logged_user = _authenticated_user(correo, contrasena)
+
+        if not logged_user:
+            flash("Correo o contraseña incorrectos.", "danger")
+            return render_template('login.html')
+        #Login exitoso
+        login_user(logged_user)
+        flash(f"Bienvendio, {logged_user.nombre}!", "sucess")
+        return _redirect_authenticated_user()
+
+    except Exception as ex:
+        app.logger.error(f"Error durante el login:{ex}")
+        flash("Error inesperado. Intenta de nuevo.","danger")
+        return render_template('login.html')
+    
+def _get_login_credentials():
+    correo = request.form.get('correo','').strip()
+    contrasena = request.form('contraseña','').strip()
+    return correo, contrasena
+
+def _are_credentials_valid(correo, contrasena):
+    return bool(correo and contrasena)
+
+def _authenticated_user(correo, contrasena):
+    conexion = get_db()
+    usuario_temporal = Usuario(
+        id=None,
+        nombre=None,
+        correo=correo,
+        password=contrasena
+    )
+
+    return UserModel.login(conexion, usuario_temporal)
 
 @app.route('/logout')
 @login_required
@@ -425,10 +424,8 @@ def recuperar():
         except Exception as e:
             flash(f"Error al recuperar contraseña: {str(e)}", 'danger')
             return render_template('recuperar.html', correo=correo)
-            
+             
     return render_template('recuperar.html')
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
