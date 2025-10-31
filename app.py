@@ -13,7 +13,7 @@ from models.UserModel import UserModel
 from models.ProductoModel import ProductoModel
 from models.CarritoModel import CarritoModel
 from models.entities.producto import Producto
-
+LOGIN_TEMPLATE = 'login.html'
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
@@ -55,6 +55,7 @@ def inicio():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+
     """Maneja el inicio de sesión de usuarios."""
     if current_user.is_authenticated:
         return _redirect_authenticated_user()
@@ -62,7 +63,7 @@ def login():
     if request.method == 'POST':
         return _handle_login_attemp()
     
-    return render_template('login.html')
+    return render_template(LOGIN_TEMPLATE)
 
         #Funciones auxiliares 
 
@@ -77,13 +78,13 @@ def _handle_login_attemp():
 
         if not _are_credentials_valid(correo, contrasena):
             flash("Por favor completa todos los campos.", "warning")
-            return render_template('login.html')
+            return render_template(LOGIN_TEMPLATE)
         
         logged_user = _authenticated_user(correo, contrasena)
 
         if not logged_user:
             flash("Correo o contraseña incorrectos.", "danger")
-            return render_template('login.html')
+            return render_template(LOGIN_TEMPLATE)
         #Login exitoso
         login_user(logged_user)
         flash(f"Bienvendio, {logged_user.nombre}!", "sucess")
@@ -92,7 +93,7 @@ def _handle_login_attemp():
     except Exception as ex:
         app.logger.error(f"Error durante el login:{ex}")
         flash("Error inesperado. Intenta de nuevo.","danger")
-        return render_template('login.html')
+        return render_template(LOGIN_TEMPLATE)
     
 def _get_login_credentials():
     correo = request.form.get('correo','').strip()
