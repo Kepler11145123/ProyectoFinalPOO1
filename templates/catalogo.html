@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -70,34 +70,64 @@
       </div>
     </div>
 
-    <div class="contenedor-catalogo">
-      <h1>Nuestro Catálogo</h1>
-      <div class="product-grid">
-        {% for producto in productos %}
-        <div class="product-card">
-          <img
-            src="{{ producto.nombre_columna_imagen }}"
-            alt="Imagen de {{ producto.nombre }}"
-          />
+    <!-- CONTENEDOR CON SIDEBAR + CATALOGO -->
+    <div class="catalogo-container">
+      <!-- FILTRO CATEGORÍAS A LA IZQUIERDA -->
+      <aside class="sidebar">
+        <div class="filter-header">
+          <h3>📁 Filtrar</h3>
+          <button class="toggle-sidebar">☰</button>
+        </div>
+        
+        <div class="category-list">
+          <button class="category-btn active" data-category="todos">
+            ✅ Todas
+          </button>
+          <button class="category-btn" data-category="Figura">
+            🎭 Figuras
+          </button>
+          <button class="category-btn" data-category="Ropa">
+            👕 Ropa
+          </button>
+          <button class="category-btn" data-category="Accesorio">
+            🎀 Accesorios
+          </button>
+        </div>
+      </aside>
 
-          <div class="card-content">
-            <h3 class="product-name">{{ producto.nombre }}</h3>
-            <span class="product-category">{{ producto.categoria }}</span>
-            <p class="product-description">{{ producto.descripcion }}</p>
-            <p class="product-price">${{ "%.2f"|format(producto.precio) }}</p>
-            
-            <form method="POST" action="{{ url_for('catalogo') }}">
-              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-              <input type="hidden" name="product_id" value="{{ producto.id }}">
-              <button type="submit" class="add-to-cart-btn">Agregar al Carrito</button>
-            </form>
+      <!-- CONTENEDOR DE PRODUCTOS -->
+      <main class="main-content">
+        <div class="contenedor-catalogo">
+          <h1>Nuestro Catálogo</h1>
+          <div class="product-grid">
+            {% for producto in productos %}
+            <div class="product-card" data-category="{{ producto.categoria }}">
+              <img
+                src="{{ producto.nombre_columna_imagen }}"
+                alt="Imagen de {{ producto.nombre }}"
+              />
+
+              <div class="card-content">
+                <h3 class="product-name">{{ producto.nombre }}</h3>
+                <span class="product-category">{{ producto.categoria }}</span>
+                <p class="product-description">{{ producto.descripcion }}</p>
+                <p class="product-price">${{ "%.2f"|format(producto.precio) }}</p>
+                
+                <form method="POST" action="{{ url_for('catalogo') }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <input type="hidden" name="product_id" value="{{ producto.id }}">
+                  <button type="submit" class="add-to-cart-btn">Agregar al Carrito</button>
+                </form>
+              </div>
+            </div>
+            {% endfor %}
           </div>
         </div>
-        {% endfor %}
-      </div>
+      </main>
     </div>
 
     <script>
+      // ========== CARRITO ==========
       function toggleCart() {
         const cartDropdown = document.getElementById('cart-dropdown');
         cartDropdown.classList.toggle('show');
@@ -112,6 +142,68 @@
           cartDropdown.classList.remove('show');
         }
       });
+
+      // ========== FILTRO DE CATEGORÍAS ==========
+      const categoryBtns = document.querySelectorAll('.category-btn');
+      const productCards = document.querySelectorAll('.product-card');
+      const sidebar = document.querySelector('.sidebar');
+      const toggleBtn = document.querySelector('.toggle-sidebar');
+
+      // Filtrar productos
+      function filterByCategory(category) {
+        productCards.forEach(card => {
+          const cardCategory = card.getAttribute('data-category');
+          
+          if (category === 'todos' || cardCategory === category) {
+            card.style.display = 'block';
+            card.style.animation = 'fadeIn 0.3s ease';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+
+        // Actualizar botón activo
+        categoryBtns.forEach(btn => {
+          btn.classList.remove('active');
+          if (btn.getAttribute('data-category') === category) {
+            btn.classList.add('active');
+          }
+        });
+      }
+
+      // Event listeners
+      categoryBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const category = btn.getAttribute('data-category');
+          filterByCategory(category);
+          
+          // Cerrar sidebar en mobile
+          if (window.innerWidth <= 768) {
+            sidebar.classList.add('hidden');
+          }
+        });
+      });
+
+      // Toggle sidebar (mobile)
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+      });
+
+      // Animación fade-in
+      const style = document.createElement('style');
+      style.innerHTML = `
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `;
+      document.head.appendChild(style);
     </script>
   </body>
 </html>
