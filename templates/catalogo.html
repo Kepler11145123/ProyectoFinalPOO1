@@ -137,84 +137,84 @@
 
     <script>
       // ========== CARRITO ==========
-      function toggleCart() {
-        const cartDropdown = document.getElementById('cart-dropdown');
-        cartDropdown.classList.toggle('show');
-      }
+      // ========== CARRITO ==========
+function toggleCart() {
+  const cartDropdown = document.getElementById('cart-dropdown');
+  cartDropdown.classList.toggle('show');
+}
 
-      // Cerrar carrito al hacer clic fuera
-      document.addEventListener('click', function(event) {
-        const cartDropdown = document.getElementById('cart-dropdown');
-        const cartToggle = document.querySelector('.cart-toggle');
-        
-        if (!cartDropdown.contains(event.target) && !cartToggle.contains(event.target)) {
-          cartDropdown.classList.remove('show');
-        }
-      });
+// Cerrar carrito al hacer clic fuera
+document.addEventListener('click', function(event) {
+  const cartDropdown = document.getElementById('cart-dropdown');
+  const cartToggle = document.querySelector('.cart-toggle');
+  
+  if (!cartDropdown.contains(event.target) && !cartToggle.contains(event.target)) {
+    cartDropdown.classList.remove('show');
+  }
+});
 
-      // ========== FILTRO DE CATEGORÍAS ==========
-      const categoryBtns = document.querySelectorAll('.category-btn');
-      const productCards = document.querySelectorAll('.product-card');
-      const sidebar = document.querySelector('.sidebar');
-      const toggleBtn = document.querySelector('.toggle-sidebar');
+// ========== FILTRO DE CATEGORÍAS ==========
+const categoryBtns = document.querySelectorAll('.category-btn');
+const productCards = document.querySelectorAll('.product-card');
+const sidebar = document.querySelector('.sidebar');
+const toggleBtn = document.querySelector('.toggle-sidebar');
 
-      // Filtrar productos
-      function filterByCategory(category) {
-        productCards.forEach(card => {
+// Filtrar productos
+function filterByCategory(category) {
+  for (const card of productCards) {
+    const cardCategory = card.dataset.category;
+    
+    if (category === 'todos' || cardCategory === category) {
+      card.style.display = 'block';
+      card.style.animation = 'fadeIn 0.3s ease';
+    } else {
+      card.style.display = 'none';
+    }
+  }
 
-          const cardCategory = card.dataset.card
-          const {card} = element.dataset
-          
-          if (category === 'todos' || cardCategory === category) {
-            card.style.display = 'block';
-            card.style.animation = 'fadeIn 0.3s ease';
-          } else {
-            card.style.display = 'none';
-          }
-        });
+  // Actualizar botón activo
+  for (const btn of categoryBtns) {
+    btn.classList.remove('active');
+    if (btn.dataset.category === category) {
+      btn.classList.add('active');
+    }
+  }
+}
 
-        // Actualizar botón activo
-        categoryBtns.forEach(btn => {
-          btn.classList.remove('active');
-          if (btn.dataset.category === category) {
-            btn.classList.add('active');
-          }
-        });
-      }
+// Event listeners
+for (const btn of categoryBtns) {
+  btn.addEventListener('click', () => {
+    const category = btn.dataset.category;
+    filterByCategory(category);
+    
+    // Cerrar sidebar en mobile
+    if (window.innerWidth <= 768) {
+      sidebar.classList.add('hidden');
+    }
+  });
+}
 
-      // Event listeners
-      categoryBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-          const category = btn.dataset.btn
-          const {btn} = element.dataset
-          filterByCategory(category);
-          
-          // Cerrar sidebar en mobile
-          if (window.innerWidth <= 768) {
-            sidebar.classList.add('hidden');
-          }
-        });
-      });
+// Toggle sidebar (mobile)
+toggleBtn.addEventListener('click', () => {
+  sidebar.classList.toggle('hidden');
+});
 
-      // Toggle sidebar (mobile)
-      toggleBtn.addEventListener('click', () => {
-        sidebar.classList.toggle('hidden');
-      });
+// Animación fade-in
+const style = document.createElement('style');
+style.innerHTML = `
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+`;
+document.head.appendChild(style);
 
-      // Animación fade-in
-      const style = document.createElement('style');
-      style.innerHTML = `
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-      `;
       document.head.appendChild(style);
     </script>
   </body>
