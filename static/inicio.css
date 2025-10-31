@@ -2,8 +2,13 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 body {
+  background-image: url("/static/imagenes/fondo_web_soft.png");
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
   font-family: 'Poppins', sans-serif;
-  background-color: #f4f7f6; /* Un gris muy claro */
+  background-color: #f4f7f6;
   margin: 0;
   padding: 0;
   color: #333;
@@ -27,12 +32,6 @@ body {
   text-decoration: none;
 }
 
-.header {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-}
-
 .header span {
   font-weight: 600;
   font-size: 1rem;
@@ -42,7 +41,7 @@ body {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 1rem; /* Espacio entre "Hola, luisa" y el botón "Inicio" */
+  gap: 1rem;
 }
 
 .header-left span {
@@ -53,7 +52,7 @@ body {
 
 /* --- Botón de Cerrar Sesión --- */
 .logout-button {
-  background-color: #637AB9; /* Rojo para "salir" */
+  background-color: #637AB9;
   color: #fff;
   border: none;
   padding: 0.6rem 1rem;
@@ -61,12 +60,12 @@ body {
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 600;
-  text-decoration: none; /* Para la etiqueta <a> */
+  text-decoration: none;
   transition: all 0.3s ease;
 }
+
 .logout-button:hover {
   background-color: #31326F;
-
 }
 
 .Inicio-button {
@@ -103,11 +102,10 @@ body {
   background-color: #31326F;
 }
 
-
-/* --- Contenedor Principal (el .contenedor de inicio.html) --- */
+/* --- Contenedor Principal --- */
 .contenedor {
   max-width: 900px;
-  margin: 3rem auto; /* Más espacio superior */
+  margin: 3rem auto;
   padding: 2.5rem;
   background-color: #fff;
   border-radius: 10px;
@@ -126,12 +124,6 @@ body {
   margin-bottom: 1.5rem;
   color: #555;
 }
-
-.ir-catalogo {
-  text-align: center;
-}
-
-/* ... (tu css de inicio) ... */
 
 .ir-catalogo {
   display: inline-block;
