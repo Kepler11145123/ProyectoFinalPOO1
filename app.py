@@ -444,7 +444,7 @@ def recuperar():
             return render_template(RECUPERAR_TEMPLATE, correo=correo)
 
         hash_nueva_contrasena = generate_password_hash(password_new)
-        user_to_update = Usuario(id=None, nombre=None, correo=correo, password=hash_nueva_contraseña)
+        user_to_update = Usuario(id=None, nombre=None, correo=correo, password=hash_nueva_contrasena)
 
         try:
             # Delegar la actualización al modelo
