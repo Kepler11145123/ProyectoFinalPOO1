@@ -36,7 +36,7 @@ def get_db():
         except psycopg2.Error as ex:
             # Es buena idea loguear el error para depurar en Render
             app.logger.error(f"FALLO AL CONECTAR A LA BD: {ex}")
-            raise Exception(f"Error al conectar con la base de datos: {ex}")
+            raise ValueError(f"Error al conectar con la base de datos: {ex}")
     return g.db
 
 @app.teardown_appcontext
@@ -158,7 +158,7 @@ def panel_admin():
         flash("Error al cargar el panel de administración.", "danger")
         return redirect(url_for('inicio'))
 
-def validar_contraseña(contraseña):
+def validar_contrasena(contraseña):
     #!Valida la contraseña con unos parámetros
     errores = []
     if len(contraseña) <8:
