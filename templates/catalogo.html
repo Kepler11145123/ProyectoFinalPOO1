@@ -180,7 +180,7 @@
         // Actualizar botón activo
         categoryBtns.forEach(btn => {
           btn.classList.remove('active');
-          if (btn.getAttribute('data-category') === category) {
+          if (btn.dataset.category === category) {
             btn.classList.add('active');
           }
         });
