@@ -21,7 +21,7 @@ class UserModel:
         except Exception as ex:
             # ¡IMPORTANTE! Hacer rollback para limpiar la transacción fallida
             db_connection.rollback()
-            raise Exception(f"Error al obtener usuario por ID: {ex}")
+            raise ValueError(f"Error al obtener usuario por ID: {ex}")
 
     @classmethod
     def login(cls, db_connection, user_entity):
@@ -40,7 +40,7 @@ class UserModel:
         except Exception as ex:
             # ¡IMPORTANTE! Hacer rollback aquí también
             db_connection.rollback()
-            raise Exception(f"Error en login: {ex}")
+            raise ValueError(f"Error en login: {ex}")
 
     # Los métodos create_user y update_password ya tenían rollback, ¡así que están bien!
     # ... (resto de tus métodos sin cambios si ya tienen rollback)
@@ -53,7 +53,7 @@ class UserModel:
             cursor = db_connection.cursor()
             cursor.execute("SELECT * FROM usuarios WHERE correo = %s", (new_user_entity.correo,))
             if cursor.fetchone():
-                raise Exception("El correo electrónico ya está registrado.")
+                raise ValueError("El correo electrónico ya está registrado.")
             
             sql_query = "INSERT INTO usuarios (nombre, correo, contraseña, rol) VALUES (%s, %s, %s, %s)"
             datos = (
@@ -84,4 +84,4 @@ class UserModel:
             return True
         except Exception as ex:
             db_connection.rollback()
-            raise Exception(f"Error al actualizar la contraseña: {ex}")
+            raise ValueError(f"Error al actualizar la contraseña: {ex}")
