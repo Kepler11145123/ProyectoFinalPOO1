@@ -16,7 +16,6 @@ body {
   align-items: center;
   overflow: hidden; /* Evita scrollbars */
 }
-
 /* --- Contenedor del Formulario (Glassmorphism) --- */
 form {
   /* Efecto "cristal" */
@@ -86,8 +85,8 @@ input:focus {
 
 /* --- Botón Principal --- */
 button {
-  background-color: rgb(76, 175, 167);
-  color: white;
+  background-color: #006666;
+  color: #fff;
   border: none;
   padding: 12px 20px;
   border-radius: 8px;
@@ -151,9 +150,9 @@ p a:hover {
 }
 /* --- Mensaje de Éxito Flotante (para la pág. de login) --- */
 .mensaje-exito-flotante {
-  color: #2e8b57;
-  background-color: #dff0d8;
-  border: 1px solid #c3e6cb;
+  color: #186135;
+  background-color: #e6f9ef;
+  border: 1px solid #2e8b57;
   padding: 15px;
   border-radius: 8px;
   text-align: center;
