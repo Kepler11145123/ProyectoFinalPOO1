@@ -165,9 +165,9 @@ def validar_contrasena(contrasena):
         errores.append("Debe tener al menos 8 caracteres.")
     if not re.search(r"[A-Z]", contrasena):
         errores.append("Debe contener al menos una letra mayúscula.")
-    if not re.search(r"[0-9]", contrasena):
+    if not re.search(r"[\d]", contrasena):
         errores.append("Debe contener al menos un número")
-    if not re.search(r"[\W_]", contrasena):
+    if not re.search(r"[\W]", contrasena):
         errores.append("Debe contener al menos un caracter especial")
     return errores
 
