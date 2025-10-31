@@ -18,6 +18,7 @@ FORM_PRODUCTO_TEMPLATE = 'form_producto.html'
 REGISTRO_TEMPLATE = 'registro.html'
 RECUPERAR_TEMPLATE = 'recuperar.html'
 ACTION_AÑADIR = 'Añadir'
+FORM_CONTRASEÑA = 'contraseña'
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
@@ -101,7 +102,7 @@ def _handle_login_attemp():
     
 def _get_login_credentials():
     correo = request.form.get('correo','').strip()
-    contrasena = request.form('contraseña','').strip()
+    contrasena = request.form(FORM_CONTRASEÑA,'').strip()
     return correo, contrasena
 
 def _are_credentials_valid(correo, contrasena):
@@ -324,7 +325,7 @@ def registro():
     if request.method == 'POST':
         nombre = request.form['nombre']
         correo = request.form['correo']
-        contraseña = request.form['contraseña']
+        contraseña = request.form[FORM_CONTRASEÑA]
         confirmar_contraseña = request.form['confirmar_contraseña']
 
         if contraseña != confirmar_contraseña:
@@ -435,7 +436,7 @@ def recuperar():
     conexion = get_db()
     if request.method == 'POST':
         correo = request.form['correo']
-        password_new = request.form['contraseña']
+        password_new = request.form[FORM_CONTRASEÑA]
         confirmar = request.form['confirmar']
 
         if password_new != confirmar:
