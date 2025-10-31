@@ -26,7 +26,7 @@ class ProductoModel:
         except Exception as ex:
             # ¡IMPORTANTE! Hacer rollback
             db_connection.rollback()
-            raise Exception(f"Error al obtener productos: {ex}")
+            raise ValueError(f"Error al obtener productos: {ex}")
 
     @classmethod
     def get_product_by_id(cls, db_connection, producto_id):
@@ -52,7 +52,7 @@ class ProductoModel:
         except Exception as ex:
             # ¡IMPORTANTE! Hacer rollback
             db_connection.rollback()
-            raise Exception(f"Error al buscar producto: {ex}")
+            raise ValueError(f"Error al buscar producto: {ex}")
         
     @classmethod
     def create_product(cls, db_connection, producto_entity):
@@ -88,7 +88,7 @@ class ProductoModel:
             # 5. Si algo falla (ej. un dato incorrecto), revertimos cualquier cambio.
             db_connection.rollback()
             # Y lanzamos la excepción para que app.py pueda mostrar un error.
-            raise Exception(f"Error al crear el producto en la base de datos: {ex}")
+            raise ValueError(f"Error al crear el producto en la base de datos: {ex}")
     
     @classmethod
     def update_product(cls, db_connection, producto_entity):
@@ -112,7 +112,7 @@ class ProductoModel:
             return True
         except Exception as ex:
             db_connection.rollback()
-            raise Exception(f"Error al actualizar producto: {ex}")
+            raise ValueError(f"Error al actualizar producto: {ex}")
         
     @classmethod
     def delete_product(cls, db_connection, producto_id):
@@ -127,5 +127,5 @@ class ProductoModel:
             return True
         except Exception as ex:
             db_connection.rollback()
-            raise Exception(f"Error al eliminar producto: {ex}")
+            raise ValueError(f"Error al eliminar producto: {ex}")
             
