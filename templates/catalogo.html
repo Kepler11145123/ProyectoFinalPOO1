@@ -189,7 +189,8 @@
       // Event listeners
       categoryBtns.forEach(btn => {
         btn.addEventListener('click', () => {
-          const category = btn.getAttribute('data-category');
+          const category = btn.dataset.btn
+          const {btn} = element.dataset
           filterByCategory(category);
           
           // Cerrar sidebar en mobile
