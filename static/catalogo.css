@@ -39,11 +39,12 @@
 /* --- Imagen del Producto --- */
 .product-card img {
   width: 100%;
-  height: 280px; /* Aumenta de ~200px a 280px o más */
-  object-fit: contain; /* Cambia de 'cover' a 'contain' para ver la imagen completa */
-  background-color: #f9f9f9; /* Fondo suave para que no se vea vacío */
+  height: 320px; /* Altura generosa */
+  object-fit: cover; /* Vuelve a cover para llenar el espacio */
+  object-position: center 20%; /* Enfoca la parte superior-central donde está el rostro */
+  background-color: #f9f9f9;
   border-radius: 8px 8px 0 0;
-  padding: 10px; /* Da un poco de espacio alrededor */
+  padding: 0; /* Sin padding para aprovechar todo el espacio */
 }
 
 
