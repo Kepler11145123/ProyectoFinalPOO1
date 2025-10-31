@@ -15,6 +15,9 @@ from models.CarritoModel import CarritoModel
 from models.entities.producto import Producto
 LOGIN_TEMPLATE = 'login.html'
 FORM_PRODUCTO_TEMPLATE = 'form_producto.html'
+REGISTRO_TEMPLATE = 'registro.html'
+RECUPERAR_TEMPLATE = 'recuperar.html'
+ACTION_AÑADIR = 'Añadir'
 load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
@@ -176,7 +179,7 @@ def nuevo_producto():
         return redirect(url_for('catalogo'))
     
     if request.method == 'GET':
-        return render_template(FORM_PRODUCTO_TEMPLATE, accion='Añadir')
+        return render_template(FORM_PRODUCTO_TEMPLATE, accion=ACTION_AÑADIR)
     
     # POST: Procesar formulario
     return _handle_create_product()
@@ -189,7 +192,7 @@ def _handle_create_product():
             if errores:
                 for error in errores:
                     flash(error, "danger")
-                return render_template(FORM_PRODUCTO_TEMPLATE, accion = 'Añadir')
+                return render_template(FORM_PRODUCTO_TEMPLATE, accion = ACTION_AÑADIR)
             
             _create_and_save_product(form_data)
 
@@ -199,7 +202,7 @@ def _handle_create_product():
         except Exception as ex:
             app.logger.error(f"Error al añadir producto: {ex}")
             flash("Error al añadir el producto.", "danger")
-            return render_template(FORM_PRODUCTO_TEMPLATE, accion='Añadir')
+            return render_template(FORM_PRODUCTO_TEMPLATE, accion=ACTION_AÑADIR)
 
 def _get_product_form_data():
     return {
@@ -326,7 +329,7 @@ def registro():
 
         if contraseña != confirmar_contraseña:
             flash('Las contraseñas no coinciden.', 'danger')
-            return render_template('registro.html', nombre=nombre, correo=correo)
+            return render_template(REGISTRO_TEMPLATE, nombre=nombre, correo=correo)
         
         hash_contraseña = generate_password_hash(contraseña)
         # Crear la entidad de usuario
@@ -339,9 +342,9 @@ def registro():
             return redirect(url_for('login'))
         except Exception as e:
             flash(str(e), 'danger')
-            return render_template('registro.html', nombre=nombre, correo=correo)
+            return render_template(REGISTRO_TEMPLATE, nombre=nombre, correo=correo)
 
-    return render_template('registro.html')
+    return render_template(REGISTRO_TEMPLATE)
 
 @app.route('/inicio')
 @login_required
@@ -437,7 +440,7 @@ def recuperar():
 
         if password_new != confirmar:
             flash('Las contraseñas no coinciden.', 'danger')
-            return render_template('recuperar.html', correo=correo)
+            return render_template(RECUPERAR_TEMPLATE, correo=correo)
 
         hash_nueva_contraseña = generate_password_hash(password_new)
         user_to_update = Usuario(id=None, nombre=None, correo=correo, password=hash_nueva_contraseña)
@@ -449,9 +452,9 @@ def recuperar():
             return redirect(url_for('login'))
         except Exception as e:
             flash(f"Error al recuperar contraseña: {str(e)}", 'danger')
-            return render_template('recuperar.html', correo=correo)
+            return render_template(RECUPERAR_TEMPLATE, correo=correo)
              
-    return render_template('recuperar.html')
+    return render_template(RECUPERAR_TEMPLATE)
 
 if __name__ == '__main__':
     app.run(debug=True)
