@@ -2,17 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
 
 body {
-  background-image: url("{{url_for('static', filename='imagenes/generated-image.png')}}");
+  background-image: url("{{ url_for('static', filename='imagenes/fondo_web_soft.png') }}");
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
   background-attachment: fixed;
   font-family: 'Poppins', sans-serif;
-  background-color: #f4f7f6; /* Un gris muy claro */
+  background-color: #f4f7f6;
   margin: 0;
   padding: 0;
   color: #333;
 }
+
 
 /* --- Header / Barra de Navegación --- */
 .header {
