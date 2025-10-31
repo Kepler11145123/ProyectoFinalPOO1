@@ -22,7 +22,7 @@
           <!-- Botón del carrito -->
           <div class="cart-container">
             <button class="cart-toggle" onclick="toggleCart()">
-              🛒 Carrito (<span id="cart-count">{{ session.carrito|length if session.carrito else 0 }}</span>)
+              🛒 Carrito (<span id="cart-count">{{ carrito|length if carrito else 0 }}</span>)
             </button>
           </div>
           <a href="/logout" class="nav-button logout">Cerrar sesión</a>
@@ -37,10 +37,10 @@
         <button class="close-cart" onclick="toggleCart()">&times;</button>
       </div>
       <div class="cart-items" id="cart-items">
-        {% if session.carrito %}
-          {% for item in session.carrito %}
+        {% if carrito %}
+          {% for item in carrito %}
           <div class="cart-item">
-            <img src="{{ item.imagen }}" alt="{{ item.nombre }}" class="cart-item-image">
+            <img src="{{ item.imagen }}" alt="{{ item.nombre }}" class="cart-item-image" >
             <div class="cart-item-details">
               <h4>{{ item.nombre }}</h4>
               <p class="cart-item-price">${{ "%.2f"|format(item.precio) }}</p>

@@ -93,9 +93,11 @@ body {
 }
 
 .product-card img {
-  width: 100%;
-  height: 200px;
-  object-fit: cover;
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Mantiene proporción cuadrada */
+    object-fit: contain;
+    padding: 10px;
+
 }
 
 .card-content {

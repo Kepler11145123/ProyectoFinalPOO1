@@ -11,6 +11,7 @@ import secrets
 from models.entities.usuario import Usuario, Cliente, Administrador
 from models.UserModel import UserModel
 from models.ProductoModel import ProductoModel
+from models.CarritoModel import CarritoModel
 from models.entities.producto import Producto
 
 load_dotenv()
@@ -327,47 +328,28 @@ def pagina_inicio():
 def catalogo():
     conexion = get_db()
     
-    # Inicializar carrito en la sesión si no existe
-    if 'carrito' not in session:
-        session['carrito'] = []
-    
-    # Asegurar que la sesión sea persistente
-    session.permanent = True
-    
     # Manejar agregar al carrito
     if request.method == 'POST':
         id_producto = request.form.get('product_id', type=int)
         if id_producto:
             try:
+                # Agregar el producto al carrito en la base de datos
+                CarritoModel.agregar_producto(conexion, current_user.id, id_producto)
                 producto = ProductoModel.get_product_by_id(conexion, id_producto)
-                if producto:
-                    # Verificar si el producto ya está en el carrito
-                    producto_en_carrito = False
-                    for item in session['carrito']:
-                        if item['id'] == id_producto:
-                            item['cantidad'] += 1
-                            producto_en_carrito = True
-                            break
-                    
-                    if not producto_en_carrito:
-                        # Agregar nuevo producto al carrito
-                        session['carrito'].append({
-                            'id': producto.id,
-                            'nombre': producto.nombre,
-                            'precio': float(producto.precio),
-                            'imagen': producto.nombre_columna_imagen,
-                            'cantidad': 1
-                        })
-                    
-                    session.modified = True
-                    flash(f"{producto.nombre} agregado al carrito", "success")
+                flash(f"{producto.nombre} agregado al carrito", "success")
             except Exception as e:
                 flash(f"Error al agregar producto: {str(e)}", 'danger')
     
     try:
         productos = ProductoModel.get_all_products(conexion)
-        total_carrito = calcular_total_carrito(session.get('carrito', []))
-        return render_template('catalogo.html', productos=productos, nombre=current_user.nombre, total_carrito=total_carrito)
+        # Obtener el carrito del usuario desde la base de datos
+        items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
+        total_carrito = calcular_total_carrito(items_carrito)
+        return render_template('catalogo.html', 
+                            productos=productos, 
+                            nombre=current_user.nombre, 
+                            total_carrito=total_carrito, 
+                            carrito=items_carrito)
     except Exception as e:
         flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
         return redirect(url_for('inicio'))
@@ -375,73 +357,41 @@ def catalogo():
 @app.route('/carrito')
 @login_required
 def ver_carrito():
-    total_carrito = calcular_total_carrito(session.get('carrito', []))
-    return render_template('carrito_compras.html', nombre=current_user.nombre, total_carrito=total_carrito)
-
-@app.route('/carrito/agregar', methods=['POST'])
-@login_required
-def agregar_al_carrito():
-    id_producto = request.form.get('product_id', type=int)
-    if not id_producto:
-        flash("ID de producto no válido", "danger")
-        return redirect(url_for('catalogo'))
-    
     try:
         conexion = get_db()
-        producto = ProductoModel.get_product_by_id(conexion, id_producto)
-        
-        if not producto:
-            flash("Producto no encontrado", "danger")
-            return redirect(url_for('catalogo'))
-        
-        # Inicializar carrito si no existe
-        if 'carrito' not in session:
-            session['carrito'] = []
-        
-        # Verificar si el producto ya está en el carrito
-        producto_en_carrito = False
-        for item in session['carrito']:
-            if item['id'] == id_producto:
-                item['cantidad'] += 1
-                producto_en_carrito = True
-                break
-        
-        if not producto_en_carrito:
-            # Agregar nuevo producto al carrito
-            session['carrito'].append({
-                'id': producto.id,
-                'nombre': producto.nombre,
-                'precio': float(producto.precio),
-                'imagen': producto.imagen_url,
-                'cantidad': 1
-            })
-        
-        session.modified = True
-        flash(f"{producto.nombre} agregado al carrito", "success")
-        
+        items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
+        total_carrito = calcular_total_carrito(items_carrito)
+        return render_template('carrito_compras.html', 
+                            nombre=current_user.nombre, 
+                            carrito=items_carrito, 
+                            total_carrito=total_carrito)
     except Exception as e:
-        flash(f"Error al agregar producto: {str(e)}", 'danger')
-    
-    return redirect(url_for('catalogo'))
+        flash(f"Error al cargar el carrito: {str(e)}", 'danger')
+        return redirect(url_for('catalogo'))
 
 @app.route('/carrito/eliminar/<int:producto_id>', methods=['POST'])
 @login_required
 def eliminar_del_carrito(producto_id):
-    if 'carrito' in session:
-        session['carrito'] = [item for item in session['carrito'] if item['id'] != producto_id]
-        session.modified = True
+    try:
+        conexion = get_db()
+        CarritoModel.eliminar_producto(conexion, current_user.id, producto_id)
         flash("Producto eliminado del carrito", "success")
+    except Exception as e:
+        flash(f"Error al eliminar producto: {str(e)}", 'danger')
     
     return redirect(url_for('ver_carrito'))
 
 @app.route('/carrito/limpiar', methods=['POST'])
 @login_required
 def limpiar_carrito():
-    session['carrito'] = []
-    session.modified = True
-    flash("Carrito limpiado", "success")
+    try:
+        conexion = get_db()
+        CarritoModel.limpiar_carrito(conexion, current_user.id)
+        flash("Carrito limpiado", "success")
+    except Exception as e:
+        flash(f"Error al limpiar carrito: {str(e)}", 'danger')
+    
     return redirect(url_for('ver_carrito'))
-
 
 def calcular_total_carrito(carrito):
     """Calcula el total del carrito correctamente"""

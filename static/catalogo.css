@@ -29,18 +29,25 @@
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  min-height: 500px; /* Aumentamos la altura mínima */
+  padding: 15px;    /* Añadimos padding interno */
+  align-items: center; /* Centramos contenido horizontalmente */
 }
 
 .product-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 50px rgba(0, 0, 0, 0.15);
 }
 
 /* --- Imagen del Producto --- */
 .product-card img {
-  width: 100%;
-  height: 200px; /* Altura fija para la imagen */
-  object-fit: cover; /* Asegura que la imagen cubra el espacio */
+    width: auto;        /* Cambiamos a auto para respetar proporción original */
+    height: 280px;      /* Ajustamos altura */
+    max-width: 100%;    /* Aseguramos que no se desborde del contenedor */
+    object-fit: contain;
+    display: block;     /* Mejora el centrado */
+    margin: 10px auto;  /* Centra la imagen horizontalmente */
+    background-color: transparent; /* Quitamos el fondo gris */
 }
 
 /* --- Contenido de la Tarjeta --- */

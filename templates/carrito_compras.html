@@ -24,9 +24,9 @@
     <div class="cart-page">
         <h1>🛒 Carrito de Compras</h1>
         
-        {% if session.carrito %}
+        {% if carrito %}
         <div class="cart-items-list">
-            {% for item in session.carrito %}
+            {% for item in carrito %}
             <div class="cart-item-page">
                 <img src="{{ item.imagen }}" alt="{{ item.nombre }}" class="cart-item-image">
                 <div class="cart-item-info">
