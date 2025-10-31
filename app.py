@@ -66,7 +66,7 @@ def login():
         return _redirect_authenticated_user()
     
     if request.method == 'POST':
-        return _handle_login_attemp()
+        return _handle_login_attempt()
     
     return render_template(LOGIN_TEMPLATE)
 
@@ -74,10 +74,10 @@ def login():
 
 def _redirect_authenticated_user():
     if current_user.rol == 'administrador':
-        return redirect(url_for('panel_admnin'))
+        return redirect(url_for('panel_admin'))
     return redirect(url_for('catalogo'))
 
-def _handle_login_attemp():
+def _handle_login_attempt():
     try:
         correo, contrasena = _get_login_credentials()
 
@@ -92,7 +92,7 @@ def _handle_login_attemp():
             return render_template(LOGIN_TEMPLATE)
         #Login exitoso
         login_user(logged_user)
-        flash(f"Bienvendio, {logged_user.nombre}!", "sucess")
+        flash(f"Bienvenido, {logged_user.nombre}!", "success")
         return _redirect_authenticated_user()
 
     except Exception as ex:
@@ -102,7 +102,7 @@ def _handle_login_attemp():
     
 def _get_login_credentials():
     correo = request.form.get('correo','').strip()
-    contrasena = request.form(FORM_CONTRASEÑA,'').strip()
+    contrasena = request.form.get(FORM_CONTRASEÑA,'').strip()
     return correo, contrasena
 
 def _are_credentials_valid(correo, contrasena):
