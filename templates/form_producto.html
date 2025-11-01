@@ -26,11 +26,7 @@
                 <textarea id="descripcion" name="descripcion" rows="3" required>{{ producto.descripcion if producto else '' }}</textarea>
             </div>
 
-            <!-- Fila 3: Categoría -->
-            <!-- <div class="form-row">
-                <label for="categoria">Categoría:</label>
-                <input type="text" id="categoria" name="categoria" value="{{ producto.categoria if producto else '' }}" required />
-            </div> -->
+
                 <div class="form-row">
                 <label for="categoria">Categoría:</label>
             <select id="categoria" name="categoria" value="{{ producto.categoria if producto else '' }}" required>
