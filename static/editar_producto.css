@@ -5,6 +5,10 @@ body {
   margin: 0;
   padding: 20px;
   color: #212529;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 20px;
 }
 
 /* --- Contenedor del Formulario --- */
@@ -15,11 +19,21 @@ body {
   background-color: #ffffff;
   border-radius: 11px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 35px;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
 }
 
 .form-container h1 {
   text-align: center;
   font-size: 28px;
+  margin-bottom: 30px;
+  color: #343a40;
+  text-align: center;
+  font-size: 26px;
   margin-bottom: 30px;
   color: #343a40;
 }
@@ -65,10 +79,13 @@ body {
 /* --- Contenedor de Botones (La Magia) --- */
 .form-actions {
   display: flex;          /* Activa Flexbox */
-  justify-content: center;/* Centra los botones horizontalmente */
   gap: 15px;              /* Espacio entre los botones */
   margin-top: 30px;       /* Espacio arriba de los botones */
   flex-wrap: wrap;        /* Si no caben, se ponen abajo */
+  justify-content: flex-end; /* Alinea los botones a la derecha */
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef; /* Línea separadora sutil */
 }
 
 /* --- Estilo Base para Todos los Botones --- */
@@ -120,31 +137,6 @@ body {
   background-color: #31326F;
 }
 
-/* --- Estilos Generales --- */
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  background-color: #f8f9fa;
-  margin: 0;
-  padding: 20px;
-}
-
-/* --- Contenedor Principal del Formulario --- */
-.form-container {
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 35px;
-  background-color: #ffffff;
-  border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.07);
-}
-
-.form-container h1 {
-  text-align: center;
-  font-size: 26px;
-  margin-bottom: 30px;
-  color: #343a40;
-}
-
 /* --- La Fila del Formulario (LA CLAVE) --- */
 .form-row {
   display: flex;         /* Activa Flexbox para la fila */
@@ -172,30 +164,9 @@ body {
 }
 
 /* --- Estilos para los Botones --- */
-.form-actions {
-  display: flex;
-  justify-content: flex-end; /* Alinea los botones a la derecha */
-  gap: 12px;
-  margin-top: 25px;
-  padding-top: 20px;
-  border-top: 1px solid #e9ecef; /* Línea separadora sutil */
-}
 
-.btn {
-  padding: 10px 24px;
-  font-size: 16px;
-  font-weight: 500;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  text-decoration: none;
-  color: white;
-  text-align: center;
-}
 
-.btn-primary { background-color: #007bff; }
-.btn-secondary { background-color: #6c757d; }
-.btn-danger { background-color: #dc3545; }
+
 
 
 /* AGREGAR ESTO AL FINAL DE TU CSS */
