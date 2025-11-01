@@ -45,6 +45,7 @@
 
 .cart-dropdown.show {
   display: flex;
+  animation: slideIn 0.3s ease-out;
 }
 
 /* Header del carrito */
@@ -96,6 +97,7 @@
   padding: 10px;
   border-bottom: 1px solid #eee;
   gap: 10px;
+  animation: slideIn 0.3s ease-out;
 }
 
 .cart-item:last-child {
@@ -426,14 +428,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-.cart-dropdown.show {
-  animation: slideIn 0.3s ease-out;
-}
-
-.cart-item {
-  animation: slideIn 0.3s ease-out;
 }
 
 /* Mejoras en el header */
