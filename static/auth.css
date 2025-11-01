@@ -178,7 +178,7 @@ p a:hover {
 /* --- Estilo para la lista de errores de contraseña --- */
 .mensaje-error-lista {
   color: #D8000C;
-  background-color: #FFD2D2;
+  background-color: #FFFFFF;
   border: 1px solid #D8000C;
   padding: 10px 15px;
   border-radius: 8px;
