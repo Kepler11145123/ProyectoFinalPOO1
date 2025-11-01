@@ -29,19 +29,26 @@
         </ul>
       </div>
       {% endif %}
-      <label>Nombre:</label>
+      <label>
       <input type="text" name="nombre" value="{{ nombre or ''}}" required placeholder="John Doe"/><br />
+      Nombre:
+      </label>
 
-      <label>Correo:</label>
+      <label>
       <input type="email" name="correo" value="{{ correo or ''}}" required placeholder="ejemplo@gmail.com"/><br />
+      Correo:
+      </label>
 
-      <label>Contraseña:</label>
+      <label>
       <small>Debe contener Mayúsculas, minúsculas, números y caracteres especiales.</small>
       <input type="password" name="contraseña" id="contraseña" required placeholder="Contraseña"/><br />
+      Contraseña:
+      </label>
 
-      <label>Confirmar contraseña:</label>
+      <label>
       <input type="password" name="confirmar_contraseña" id="confirmar_contraseña" required placeholder="Confirma tu contraseña"/><br />
-
+      Confirmar contraseña:
+      </label>
       <button type="submit">Registrar</button>
 
       <p>¿Ya tienes cuenta? <a href="/">Inicia sesión</a></p>
