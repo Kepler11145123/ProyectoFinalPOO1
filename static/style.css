@@ -38,7 +38,7 @@ body {
 }
 
 .nav-button {
-  background-color: #637AB9;
+  background-color: #30447C;
   color: #fff;
   border: none;
   padding: 0.6rem 1rem;
@@ -128,7 +128,7 @@ body {
 }
 
 .add-to-cart-btn {
-  background-color: #4CAF50;
+  background-color: #1B5B30;
   color: white;
   border: none;
   padding: 10px 15px;
@@ -210,13 +210,13 @@ body {
 .category-btn:hover {
   background-color: #e8f5e9;
   border-color: #2e8b57;
-  color: #2e8b57;
+  color: #1D643E;
 }
 
 .category-btn.active {
-  background-color: #2e8b57;
+  background-color: #1D643E;
   color: white;
-  border-color: #2e8b57;
+  border-color: #1D643E;
 }
 
 .main-content {
