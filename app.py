@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, get_flashed_messages
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 import psycopg2

@@ -165,7 +165,7 @@ function filterByCategory(category) {
     const cardCategory = card.dataset.category;
     
     if (category === 'todos' || cardCategory === category) {
-      card.style.display = 'block';
+      card.style.display = 'flex';
       card.style.animation = 'fadeIn 0.3s ease';
     } else {
       card.style.display = 'none';
