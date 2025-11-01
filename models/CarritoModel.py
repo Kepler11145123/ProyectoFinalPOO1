@@ -28,7 +28,7 @@ class CarritoModel:
                 return items_carrito
         except Exception as ex:
             db_connection.rollback()
-            raise Exception(f"Error al obtener carrito: {ex}")
+            raise ValueError(f"Error al obtener carrito: {ex}")
 
     @classmethod
     def agregar_producto(cls, db_connection, id_usuario, id_producto):
@@ -41,7 +41,7 @@ class CarritoModel:
                 return True
         except Exception as ex:
             db_connection.rollback()
-            raise Exception(f"Error al agregar producto al carrito: {ex}")
+            raise ValueError(f"Error al agregar producto al carrito: {ex}")
 
     @classmethod
     def eliminar_producto(cls, db_connection, id_usuario, id_producto):
@@ -54,7 +54,7 @@ class CarritoModel:
                 return True
         except Exception as ex:
             db_connection.rollback()
-            raise Exception(f"Error al eliminar producto del carrito: {ex}")
+            raise ValueError(f"Error al eliminar producto del carrito: {ex}")
 
     @classmethod
     def limpiar_carrito(cls, db_connection, id_usuario):
@@ -67,4 +67,4 @@ class CarritoModel:
                 return True
         except Exception as ex:
             db_connection.rollback()
-            raise Exception(f"Error al limpiar carrito: {ex}")
+            raise ValueError(f"Error al limpiar carrito: {ex}")
