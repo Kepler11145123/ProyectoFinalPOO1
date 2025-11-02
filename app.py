@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g, get_flashed_messages
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, get_flashed_messages, jsonify
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 import psycopg2
@@ -383,6 +383,98 @@ def catalogo():
         flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
         return redirect(url_for('inicio'))
 
+
+@app.route('/api/carrito/agregar', methods=['POST'])
+@login_required
+def api_agregar_carrito():
+    """API para agregar un producto al carrito y devolver el estado actualizado en JSON."""
+    try:
+        data = request.get_json(force=True, silent=True) or request.form
+        id_producto = None
+        if isinstance(data, dict):
+            id_producto = data.get('product_id')
+        else:
+            id_producto = request.form.get('product_id')
+
+        if not id_producto:
+            return jsonify({'success': False, 'message': 'ID de producto no enviado'}), 400
+
+        id_producto = int(id_producto)
+        conexion = get_db()
+        CarritoModel.agregar_producto(conexion, current_user.id, id_producto)
+
+        # Obtener carrito actualizado
+        items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
+        total = calcular_total_carrito(items_carrito)
+
+        return jsonify({
+            'success': True,
+            'message': 'Producto agregado al carrito',
+            'items': items_carrito,
+            'count': len(items_carrito),
+            'total': total
+        })
+    except Exception as ex:
+        app.logger.error(f"Error en API agregar carrito: {ex}")
+        return jsonify({'success': False, 'message': str(ex)}), 500
+
+
+@app.route('/api/carrito/eliminar', methods=['POST'])
+@login_required
+def api_eliminar_carrito():
+    """API para eliminar un producto del carrito y devolver estado actualizado en JSON."""
+    try:
+        data = request.get_json(force=True, silent=True) or request.form
+        id_producto = None
+        if isinstance(data, dict):
+            id_producto = data.get('product_id')
+        else:
+            id_producto = request.form.get('product_id')
+
+        if not id_producto:
+            return jsonify({'success': False, 'message': 'ID de producto no enviado'}), 400
+
+        id_producto = int(id_producto)
+        conexion = get_db()
+        CarritoModel.eliminar_producto(conexion, current_user.id, id_producto)
+
+        items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
+        total = calcular_total_carrito(items_carrito)
+
+        return jsonify({
+            'success': True,
+            'message': 'Producto eliminado del carrito',
+            'items': items_carrito,
+            'count': len(items_carrito),
+            'total': total
+        })
+    except Exception as ex:
+        app.logger.error(f"Error en API eliminar carrito: {ex}")
+        return jsonify({'success': False, 'message': str(ex)}), 500
+
+
+@app.route('/api/carrito/limpiar', methods=['POST'])
+@login_required
+def api_limpiar_carrito():
+    """API para limpiar el carrito del usuario y devolver estado actualizado en JSON."""
+    try:
+        conexion = get_db()
+        CarritoModel.limpiar_carrito(conexion, current_user.id)
+
+        items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
+        total = calcular_total_carrito(items_carrito)
+
+        return jsonify({
+            'success': True,
+            'message': 'Carrito limpiado',
+            'items': items_carrito,
+            'count': len(items_carrito),
+            'total': total
+        })
+    except Exception as ex:
+        app.logger.error(f"Error en API limpiar carrito: {ex}")
+        return jsonify({'success': False, 'message': str(ex)}), 500
+
 @app.route('/carrito')
 @login_required
 def ver_carrito():
@@ -459,3 +551,4 @@ def recuperar():
 
 if __name__ == '__main__':
     app.run(debug=True)
+

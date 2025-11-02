@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Catálogo de Productos</title>
+  <meta name="csrf-token" content="{{ csrf_token() }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='carrito.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='imagenes/icons8-illuminati-symbol-48.png') }}">
@@ -46,7 +47,7 @@
               <p class="cart-item-price">${{ "%.2f"|format(item.precio) }}</p>
               <p class="cart-item-quantity">Cantidad: {{ item.cantidad }}</p>
             </div>
-            <form method="POST" action="{{ url_for('eliminar_del_carrito', producto_id=item.id) }}" style="display: inline;">
+            <form method="POST" class="remove-from-cart-form" data-product-id="{{ item.id }}" action="#" style="display: inline;">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
               <button type="submit" class="remove-item-btn">🗑️</button>
             </form>
@@ -58,10 +59,10 @@
       </div>
       <div class="cart-footer">
         <div class="cart-total">
-          <strong>Total: ${{ "%.2f"|format(total_carrito) }}</strong>
+          <strong>Total: $<span id="cart-total">{{ "%.2f"|format(total_carrito) }}</span></strong>
         </div>
         <div class="cart-actions">
-          <form method="POST" action="{{ url_for('limpiar_carrito') }}" style="display: inline;">
+          <form method="POST" class="clear-cart-form" action="#" style="display: inline;">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
             <button type="submit" class="clear-cart-btn">Limpiar Carrito</button>
           </form>
@@ -122,7 +123,7 @@
                 <p class="product-description">{{ producto.descripcion }}</p>
                 <p class="product-price">${{ "%.2f"|format(producto.precio) }}</p>
                 
-                <form method="POST" action="{{ url_for('catalogo') }}">
+                <form method="POST" class="add-to-cart-form" data-product-id="{{ producto.id }}" action="#">
                   <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                   <input type="hidden" name="product_id" value="{{ producto.id }}">
                   <button type="submit" class="add-to-cart-btn">Agregar al Carrito</button>
@@ -137,84 +138,206 @@
 
     <script>
       // ========== CARRITO ==========
-      // ========== CARRITO ==========
-function toggleCart() {
-  const cartDropdown = document.getElementById('cart-dropdown');
-  cartDropdown.classList.toggle('show');
-}
+      function toggleCart() {
+        const cartDropdown = document.getElementById('cart-dropdown');
+        cartDropdown.classList.toggle('show');
+      }
 
-// Cerrar carrito al hacer clic fuera
-document.addEventListener('click', function(event) {
-  const cartDropdown = document.getElementById('cart-dropdown');
-  const cartToggle = document.querySelector('.cart-toggle');
-  
-  if (!cartDropdown.contains(event.target) && !cartToggle.contains(event.target)) {
-    cartDropdown.classList.remove('show');
-  }
-});
+      // Cerrar carrito al hacer clic fuera
+      document.addEventListener('click', function(event) {
+        const cartDropdown = document.getElementById('cart-dropdown');
+        const cartToggle = document.querySelector('.cart-toggle');
+        if (!cartDropdown.contains(event.target) && !cartToggle.contains(event.target)) {
+          cartDropdown.classList.remove('show');
+        }
+      });
 
-// ========== FILTRO DE CATEGORÍAS ==========
-const categoryBtns = document.querySelectorAll('.category-btn');
-const productCards = document.querySelectorAll('.product-card');
-const sidebar = document.querySelector('.sidebar');
-const toggleBtn = document.querySelector('.toggle-sidebar');
+      // Manejo AJAX para agregar al carrito sin recargar la página
+      (function() {
+        const forms = document.querySelectorAll('.add-to-cart-form');
+        const apiUrl = "{{ url_for('api_agregar_carrito') }}";
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
 
-// Filtrar productos
-function filterByCategory(category) {
-  for (const card of productCards) {
-    const cardCategory = card.dataset.category;
-    
-    if (category === 'todos' || cardCategory === category) {
-      card.style.display = 'flex';
-      card.style.animation = 'fadeIn 0.3s ease';
-    } else {
-      card.style.display = 'none';
-    }
-  }
+        function renderCartItems(items) {
+          const container = document.getElementById('cart-items');
+          if (!items || items.length === 0) {
+            container.innerHTML = '<p class="empty-cart">Tu carrito está vacío</p>';
+            return;
+          }
 
-  // Actualizar botón activo
-  for (const btn of categoryBtns) {
-    btn.classList.remove('active');
-    if (btn.dataset.category === category) {
-      btn.classList.add('active');
-    }
-  }
-}
+          container.innerHTML = '';
+          for (const item of items) {
+            const div = document.createElement('div');
+            div.className = 'cart-item';
+            div.innerHTML = `
+              <img src="${item.imagen}" alt="${item.nombre}" class="cart-item-image">
+              <div class="cart-item-details">
+                <h4>${item.nombre}</h4>
+                <p class="cart-item-price">$${item.precio.toFixed(2)}</p>
+                <p class="cart-item-quantity">Cantidad: ${item.cantidad}</p>
+              </div>
+              <form method="POST" class="remove-from-cart-form" data-product-id="${item.id}" action="#" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit" class="remove-item-btn">🗑️</button>
+              </form>
+            `;
+            container.appendChild(div);
+          }
+        }
 
-// Event listeners
-for (const btn of categoryBtns) {
-  btn.addEventListener('click', () => {
-    const category = btn.dataset.category;
-    filterByCategory(category);
-    
-    // Cerrar sidebar en mobile
-    if (window.innerWidth <= 768) {
-      sidebar.classList.add('hidden');
-    }
-  });
-}
+        function updateCartUI(data) {
+          // actualizar contador
+          const countEl = document.getElementById('cart-count');
+          if (countEl) countEl.textContent = data.count || 0;
+          // actualizar total
+          const totalEl = document.getElementById('cart-total');
+          if (totalEl) totalEl.textContent = (data.total || 0).toFixed(2);
+          // render items
+          renderCartItems(data.items || []);
+        }
 
-// Toggle sidebar (mobile)
-toggleBtn.addEventListener('click', () => {
-  sidebar.classList.toggle('hidden');
-});
+        for (const form of forms) {
+          form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const productId = form.dataset.productId || form.querySelector('input[name="product_id"]').value;
+            try {
+              const res = await fetch(apiUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ product_id: productId })
+              });
 
-// Animación fade-in
-const style = document.createElement('style');
-style.innerHTML = `
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-`;
-document.head.appendChild(style);
+              const data = await res.json();
+              if (data.success) {
+                updateCartUI(data);
+              } else {
+                alert(data.message || 'Error al agregar al carrito');
+              }
+            } catch (err) {
+              console.error('Error agregando al carrito:', err);
+              alert('Error al agregar al carrito');
+            }
+          });
+        }
 
+        // Delegated handler for remove-from-cart forms inside the cart container
+        const container = document.getElementById('cart-items');
+        const apiEliminar = "{{ url_for('api_eliminar_carrito') }}";
+        const apiLimpiar = "{{ url_for('api_limpiar_carrito') }}";
+
+        if (container) {
+          container.addEventListener('submit', async (ev) => {
+            const targetForm = ev.target;
+            if (!targetForm || !targetForm.classList.contains('remove-from-cart-form')) return;
+            ev.preventDefault();
+            const productId = targetForm.dataset.productId || targetForm.querySelector('input[name="product_id"]')?.value;
+            try {
+              const res = await fetch(apiEliminar, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ product_id: productId })
+              });
+              const data = await res.json();
+              if (data.success) {
+                updateCartUI(data);
+              } else {
+                alert(data.message || 'Error al eliminar');
+              }
+            } catch (err) {
+              console.error('Error eliminando del carrito:', err);
+              alert('Error al eliminar del carrito');
+            }
+          });
+        }
+
+        // Clear cart form (static)
+        const clearForm = document.querySelector('.clear-cart-form');
+        if (clearForm) {
+          clearForm.addEventListener('submit', async (ev) => {
+            ev.preventDefault();
+            try {
+              const res = await fetch(apiLimpiar, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRFToken': csrfToken
+                }
+              });
+              const data = await res.json();
+              if (data.success) {
+                updateCartUI(data);
+              } else {
+                alert(data.message || 'Error al limpiar carrito');
+              }
+            } catch (err) {
+              console.error('Error limpiando carrito:', err);
+              alert('Error al limpiar carrito');
+            }
+          });
+        }
+      })();
+
+      // ========== FILTRO DE CATEGORÍAS ==========
+      const categoryBtns = document.querySelectorAll('.category-btn');
+      const productCards = document.querySelectorAll('.product-card');
+      const sidebar = document.querySelector('.sidebar');
+      const toggleBtn = document.querySelector('.toggle-sidebar');
+
+      // Filtrar productos
+      function filterByCategory(category) {
+        for (const card of productCards) {
+          const cardCategory = card.dataset.category;
+          if (category === 'todos' || cardCategory === category) {
+            card.style.display = 'flex';
+            card.style.animation = 'fadeIn 0.3s ease';
+          } else {
+            card.style.display = 'none';
+          }
+        }
+
+        // Actualizar botón activo
+        for (const btn of categoryBtns) {
+          btn.classList.remove('active');
+          if (btn.dataset.category === category) {
+            btn.classList.add('active');
+          }
+        }
+      }
+
+      // Event listeners
+      for (const btn of categoryBtns) {
+        btn.addEventListener('click', () => {
+          const category = btn.dataset.category;
+          filterByCategory(category);
+          // Cerrar sidebar en mobile
+          if (window.innerWidth <= 768) {
+            sidebar.classList.add('hidden');
+          }
+        });
+      }
+
+      // Toggle sidebar (mobile)
+      toggleBtn.addEventListener('click', () => {
+        sidebar.classList.toggle('hidden');
+      });
+
+      // Animación fade-in
+      const style = document.createElement('style');
+      style.innerHTML = `
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `;
       document.head.appendChild(style);
     </script>
   </body>
