@@ -86,29 +86,28 @@
     }
 
     function agregarLinea() {
-      const select = document.getElementById('new-product-select');
-      const qty = document.getElementById('new-product-qty').value || 1;
-      const prodId = select.value;
-      const prodText = select.options[select.selectedIndex].text;
-
-      const tbody = document.getElementById('detalles-body');
-      const newId = 'new_' + Date.now();
-
-      const tr = document.createElement('tr');
-      tr.setAttribute('data-detalle-id', newId);
-      tr.className = 'ep-row';
-      tr.innerHTML = `
-        <td class="ep-new-prod">
-          <input type="hidden" name="new_prod_id_${newId}" value="${prodId}" />
-          <span class="ep-new-text">${prodText}</span>
-        </td>
-        <td>
-          <input type="number" min="1" name="new_cant_${newId}" value="${qty}" class="ep-input" />
-        </td>
-        <td class="ep-actions">
-          <button type="button" class="ep-btn ep-btn-danger" onclick="this.closest('tr').remove()">Eliminar</button>
-        </td>
-      `;
+  const select = document.getElementById('new-product-select');
+  const qty = document.getElementById('new-product-qty').value || 1;
+  const prodId = select.value;
+  const prodText = select.options[select.selectedIndex].text;
+  const tbody = document.getElementById('detalles-body');
+  const newId = 'new_' + Date.now();
+  const tr = document.createElement('tr');
+  tr.dataset.detalleId = newId;
+  
+  tr.className = 'ep-row';
+  tr.innerHTML = `
+    <td class="ep-new-prod">
+      <input type="hidden" name="new_prod_id_${newId}" value="${prodId}" />
+      <span class="ep-new-text">${prodText}</span>
+    </td>
+    <td>
+      <input type="number" min="1" name="new_cant_${newId}" value="${qty}" class="ep-input" />
+    </td>
+    <td class="ep-actions">
+      <button type="button" class="ep-btn ep-btn-danger" onclick="this.closest('tr').remove()">Eliminar</button>
+    </td>
+  `;
       tbody.appendChild(tr);
     }
   </script>
