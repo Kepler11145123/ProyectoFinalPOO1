@@ -52,7 +52,7 @@
             <!-- Fila 6: Stock -->
             <div class="form-row">
                 <label for="stock">Stock (Unidades):</label>
-                <input type="number" id="stock" name="stock" min="0" value="{{ producto.stock if producto else '0' }}" required />
+                <input type="number" id="stock" name="stock" min="0" value="{{ producto.stock if producto else '0' }}" required readonly/>
             </div>
 
             <!-- Fila 7: Botones -->
