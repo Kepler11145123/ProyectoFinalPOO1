@@ -23,8 +23,8 @@
         <div class="ep-status-row" style="margin-bottom:12px; display:flex; align-items:center; gap:12px;">
           <label for="status" class="ep-label">Estado del pedido:</label>
           <select name="status" id="status" class="ep-select">
-            <option value="pendiente" {% if pedido.status = 'pendiente' %}selected{% endif %}>Pendiente</option>
-            <option value="completado" {% if pedido.status = 'completado' %}selected{% endif %}>Completado</option>
+            <option value="pendiente" {% if pedido.status == 'pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="completado" {% if pedido.status == 'completado' %}selected{% endif %}>Completado</option>
           </select>
         </div>
 
@@ -43,7 +43,7 @@
                 <td>
                   <select name="producto_{{ d.id_detalle }}" class="ep-select">
                     {% for p in productos %}
-                      <option value="{{ p.id }}" {% if p.id = d.id_producto %}selected{% endif %}>{{ p.nombre }}</option>
+                      <option value="{{ p.id }}" {% if p.id == d.id_producto %}selected{% endif %}>{{ p.nombre }}</option>
                     {% endfor %}
                   </select>
                 </td>
@@ -95,52 +95,30 @@
     }
 
     function agregarLinea() {
-      const select = document.getElementById('new-product-select');
-      const qty = document.getElementById('new-product-qty').value || 1;
-      const prodId = select.value;
-      const prodText = select.options[select.selectedIndex].text;
-      const tbody = document.getElementById('detalles-body');
-      const newId = 'new_' + Date.now();
-      const tr = document.createElement('tr');
-      tr.dataset.detalleId = newId;
-
-      tr.className = 'ep-row';
-      tr.innerHTML = `
-        <td class="ep-new-prod">
-          <input type="hidden" name="new_prod_id_${newId}" value="${prodId}" />
-          <span class="ep-new-text">${prodText}</span>
-        </td>
-        <td>
-          <input type="number" min="1" name="new_cant_${newId}" value="${qty}" class="ep-input" />
-        </td>
-        <td class="ep-actions">
-          <button type="button" class="ep-btn ep-btn-danger btn-remove-new">Eliminar</button>
-        </td>
-      `;
+  const select = document.getElementById('new-product-select');
+  const qty = document.getElementById('new-product-qty').value || 1;
+  const prodId = select.value;
+  const prodText = select.options[select.selectedIndex].text;
+  const tbody = document.getElementById('detalles-body');
+  const newId = 'new_' + Date.now();
+  const tr = document.createElement('tr');
+  tr.dataset.detalleId = newId;
+  
+  tr.className = 'ep-row';
+  tr.innerHTML = `
+    <td class="ep-new-prod">
+      <input type="hidden" name="new_prod_id_${newId}" value="${prodId}" />
+      <span class="ep-new-text">${prodText}</span>
+    </td>
+    <td>
+      <input type="number" min="1" name="new_cant_${newId}" value="${qty}" class="ep-input" />
+    </td>
+    <td class="ep-actions">
+      <button type="button" class="ep-btn ep-btn-danger" onclick="this.closest('tr').remove()">Eliminar</button>
+    </td>
+  `;
       tbody.appendChild(tr);
     }
-
-    // Delegación de eventos para botones eliminar y para el botón de agregar línea
-    document.addEventListener('DOMContentLoaded', function() {
-      // Manejar clicks dentro del tbody de detalles (tanto filas existentes como nuevas)
-      const detallesBody = document.getElementById('detalles-body');
-      if (detallesBody) {
-        detallesBody.addEventListener('click', function(e) {
-          const target = e.target;
-          if (target.matches('.btn-eliminar')) {
-            const det = target.dataset.detalle;
-            if (det) marcarEliminar(det);
-          } else if (target.matches('.btn-remove-new')) {
-            const row = target.closest('tr');
-            if (row) row.remove();
-          }
-        });
-      }
-
-      // Botón para agregar línea (fuera del tbody)
-      const btnAdd = document.getElementById('btn-add-line');
-      if (btnAdd) btnAdd.addEventListener('click', agregarLinea);
-    });
-  </script>
+</script>
 </body>
 </html>

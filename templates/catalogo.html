@@ -248,7 +248,7 @@
           });
         }
 
-        // ===== Custom select behavior (toggle, select option, close on outside click) =====
+        // ===== Custom select behavior refactored to avoid deep nesting =====
         (function() {
           function closeAll() {
             document.querySelectorAll('.custom-select-options.show').forEach(el => {
@@ -259,48 +259,59 @@
             });
           }
 
-          document.addEventListener('click', function(e) {
-            // close when clicking outside any custom-select
+          function onDocumentClick(e) {
             if (!e.target.closest('.custom-select')) {
               closeAll();
             }
-          });
+          }
+
+          function onToggleClick(options, toggle, ev) {
+            ev.stopPropagation();
+            const isOpen = options.classList.contains('show');
+            if (isOpen) {
+              options.classList.remove('show');
+              options.setAttribute('aria-hidden', 'true');
+              toggle.setAttribute('aria-expanded', 'false');
+            } else {
+              options.classList.add('show');
+              options.setAttribute('aria-hidden', 'false');
+              toggle.setAttribute('aria-expanded', 'true');
+              const selLi = options.querySelector('li.selected') || options.querySelector('li');
+              if (selLi) selLi.scrollIntoView({block: 'nearest'});
+            }
+          }
+
+          function onOptionSelected(li, options, input, valueEl, toggle) {
+            options.querySelectorAll('li').forEach(x => x.classList.remove('selected'));
+            li.classList.add('selected');
+            const v = li.getAttribute('data-value');
+            if (input) input.value = v;
+            if (valueEl) valueEl.textContent = v;
+            options.classList.remove('show');
+            options.setAttribute('aria-hidden', 'true');
+            toggle.setAttribute('aria-expanded', 'false');
+          }
+
+          document.addEventListener('click', onDocumentClick);
 
           const selects = document.querySelectorAll('.custom-select');
-          selects.forEach(sel => {
+          selects.forEach(function setupSelect(sel) {
             const toggle = sel.querySelector('.custom-select-toggle');
             const options = sel.querySelector('.custom-select-options');
             const input = sel.querySelector('input[name="quantity"]');
             const valueEl = sel.querySelector('.custom-select-value');
 
-            toggle.addEventListener('click', (ev) => {
-              ev.stopPropagation();
-              const isOpen = options.classList.contains('show');
-              if (isOpen) {
-                options.classList.remove('show');
-                options.setAttribute('aria-hidden', 'true');
-                toggle.setAttribute('aria-expanded', 'false');
-              } else {
-                options.classList.add('show');
-                options.setAttribute('aria-hidden', 'false');
-                toggle.setAttribute('aria-expanded', 'true');
-                const selLi = options.querySelector('li.selected') || options.querySelector('li');
-                if (selLi) selLi.scrollIntoView({block: 'nearest'});
-              }
-            });
+            if (!toggle || !options) return;
 
-            options.querySelectorAll('li').forEach(li => {
-              li.addEventListener('click', (ev) => {
-                ev.stopPropagation();
-                options.querySelectorAll('li').forEach(x => x.classList.remove('selected'));
-                li.classList.add('selected');
-                const v = li.getAttribute('data-value');
-                if (input) input.value = v;
-                if (valueEl) valueEl.textContent = v;
-                options.classList.remove('show');
-                options.setAttribute('aria-hidden', 'true');
-                toggle.setAttribute('aria-expanded', 'false');
-              });
+            // Toggle click uses a named handler to avoid nesting
+            toggle.addEventListener('click', function(ev) { onToggleClick(options, toggle, ev); });
+
+            // Use delegated click on the options container instead of wiring each li
+            options.addEventListener('click', function(ev) {
+              const li = ev.target.closest('li');
+              if (!li) return;
+              ev.stopPropagation();
+              onOptionSelected(li, options, input, valueEl, toggle);
             });
           });
         })();
