@@ -671,7 +671,6 @@ def pagar():
     # POST: procesar datos de la tarjeta (simulado)
     titular = request.form.get('titular')
     numero = request.form.get('numero', '').replace(' ', '')
-    vencimiento = request.form.get('vencimiento')
     cvv = request.form.get('cvv')
 
     # Validaciones simples (no reales)
