@@ -40,19 +40,19 @@
             <!-- Fila 4: URL de la Imagen -->
             <div class="form-row">
                 <label for="imagen_url">URL de la Imagen:</label>
-                <input type="text" id="imagen_url" name="nombre_columna_imagen" value="{{ producto.nombre_columna_imagen if producto else '' }}" required />
+                <input type="text" id="imagen_url" name="nombre_columna_imagen" value="{{ producto.nombre_columna_imagen if producto else '' }}" required readonly/>
             </div>
 
             <!-- Fila 5: Precio -->
             <div class="form-row">
                 <label for="precio">Precio (USD):</label>
-                <input type="number" id="precio" name="precio" step="0.01" min="0" value="{{ producto.precio if producto else '0.00' }}" required />
+                <input type="number" id="precio" name="precio" step="0.01" min="0" value="{{ producto.precio if producto else '0.00' }}" required/>
             </div>
             
             <!-- Fila 6: Stock -->
             <div class="form-row">
                 <label for="stock">Stock (Unidades):</label>
-                <input type="number" id="stock" name="stock" min="0" value="{{ producto.stock if producto else '0' }}" required />
+                <input type="number" id="stock" name="stock" min="0" value="{{ producto.stock if producto else '0' }}" required/>
             </div>
 
             <!-- Fila 7: Botones -->
