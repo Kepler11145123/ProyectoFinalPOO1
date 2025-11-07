@@ -13,6 +13,11 @@ from models.UserModel import UserModel
 from models.ProductoModel import ProductoModel
 from models.CarritoModel import CarritoModel
 from models.entities.producto import Producto
+from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import Table, TableStyle
+from datetime import datetime
 LOGIN_TEMPLATE = 'login.html'
 FORM_PRODUCTO_TEMPLATE = 'form_producto.html'
 REGISTRO_TEMPLATE = 'registro.html'
@@ -501,6 +506,207 @@ def eliminar_del_carrito(producto_id):
         flash(f"Error al eliminar producto: {str(e)}", 'danger')
     
     return redirect(url_for('ver_carrito'))
+
+
+@app.route('/generar_recibo', methods=['POST'])
+@login_required
+def generar_recibo():
+    # Usamos la función auxiliar para mantener la lógica reutilizable.
+    try:
+        conexion = get_db()
+        items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
+        if not items_carrito:
+            flash("No hay items en el carrito", "warning")
+            return redirect(url_for('ver_carrito'))
+
+        pdf_filename = _generate_pdf_for_items(items_carrito, current_user)
+
+        # Limpiar carrito
+        CarritoModel.limpiar_carrito(conexion, current_user.id)
+
+        return redirect(url_for('static', filename=f'recibos/{pdf_filename}'))
+    except Exception as e:
+        app.logger.error(f"Error generando recibo: {e}")
+        flash("Error al generar el recibo", "danger")
+        return redirect(url_for('ver_carrito'))
+
+
+def _generate_pdf_for_items(items_carrito, usuario):
+    """Genera el PDF a partir de una lista de items (diccionarios) y retorna el nombre de archivo generado."""
+    # Crear directorio para recibos si no existe
+    recibos_dir = os.path.join(app.root_path, 'static', 'recibos')
+    os.makedirs(recibos_dir, exist_ok=True)
+
+    # Nombre único para el PDF
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    pdf_filename = f"recibo_{getattr(usuario, 'id', 'anon')}_{timestamp}.pdf"
+    pdf_path = os.path.join(recibos_dir, pdf_filename)
+
+    # Crear PDF
+    c = canvas.Canvas(pdf_path, pagesize=letter)
+    width, height = letter
+
+    # Encabezado
+    c.setFont("Helvetica-Bold", 18)
+    c.drawString(50, height - 50, "Recibo de Compra")
+
+    # Información del cliente y fecha
+    c.setFont("Helvetica", 11)
+    c.drawString(50, height - 80, f"Cliente: {getattr(usuario, 'nombre', '')}")
+    correo = getattr(usuario, 'correo', '') if hasattr(usuario, 'correo') else ''
+    c.drawString(50, height - 100, f"Correo: {correo}")
+    fecha_str = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
+    c.drawString(50, height - 120, f"Fecha: {fecha_str}")
+
+    # Agrupar productos por ID y sumar cantidades
+    agregados = {}
+
+    def _as_dict(item):
+        """Normaliza un item retornando un dict con claves: id, nombre, precio, cantidad."""
+        # Si ya es dict-like
+        if isinstance(item, dict):
+            return {
+                'id': item.get('id') or item.get('producto_id') or item.get('product_id'),
+                'nombre': item.get('nombre') or item.get('titulo') or item.get('name') or '',
+                'precio': float(item.get('precio') or item.get('price') or 0),
+                'cantidad': int(item.get('cantidad') or item.get('qty') or item.get('quantity') or 1)
+            }
+
+        # Si es un objeto con atributos
+        try:
+            pid = getattr(item, 'id', None) or getattr(item, 'producto_id', None) or getattr(item, 'product_id', None)
+            nombre = getattr(item, 'nombre', None) or getattr(item, 'titulo', None) or getattr(item, 'name', None) or ''
+            precio = getattr(item, 'precio', None) or getattr(item, 'price', None) or 0
+            cantidad = getattr(item, 'cantidad', None) or getattr(item, 'qty', None) or getattr(item, 'quantity', None) or 1
+            return {
+                'id': pid,
+                'nombre': nombre,
+                'precio': float(precio),
+                'cantidad': int(cantidad)
+            }
+        except Exception:
+            # Fallback: intentar acceder por índice si es tupla/list
+            try:
+                # Asumimos orden: id, nombre, precio, cantidad
+                pid = item[0]
+                nombre = item[1]
+                precio = float(item[2])
+                cantidad = int(item[3])
+                return {'id': pid, 'nombre': nombre, 'precio': precio, 'cantidad': cantidad}
+            except Exception:
+                # Si falla, devolver un item neutro para evitar romper toda la generación
+                return {'id': None, 'nombre': str(item), 'precio': 0.0, 'cantidad': 1}
+
+    for item in items_carrito:
+        it = _as_dict(item)
+        pid = it['id']
+        nombre = it['nombre']
+        precio = float(it['precio'])
+        cantidad = int(it['cantidad'])
+
+        if pid in agregados:
+            agregados[pid]['cantidad'] += cantidad
+            agregados[pid]['precio'] = precio
+        else:
+            agregados[pid] = {'id': pid, 'nombre': nombre, 'precio': precio, 'cantidad': cantidad}
+
+    # Preparar datos de la tabla
+    data = [["Producto", "Cantidad", "Precio Unit.", "Subtotal"]]
+    total = 0
+    for agg in agregados.values():
+        precio = float(agg.get('precio', 0))
+        cantidad = int(agg.get('cantidad', 0))
+        subtotal = precio * cantidad
+        total += subtotal
+        data.append([
+            agg.get('nombre', ''),
+            str(cantidad),
+            f"${precio:.2f}",
+            f"${subtotal:.2f}"
+        ])
+
+    # Fila de total
+    data.append(["", "", "Total:", f"${total:.2f}"])
+
+    # Crear tabla
+    table = Table(data, colWidths=[240, 80, 100, 100])
+    table.setStyle(TableStyle([
+        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a5568')),
+        ('TEXTCOLOR', (0, 0), (-1, 0), colors.whitesmoke),
+        ('ALIGN', (1, 1), (-1, -2), 'CENTER'),
+        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+        ('FONTSIZE', (0, 0), (-1, 0), 11),
+        ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+        ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
+        ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f7fafc')),
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')
+    ]))
+
+    # Dibujar tabla
+    table_width, table_height = table.wrap(0, 0)
+    y_position = height - 160 - table_height
+    if y_position < 80:
+        y_position = 80
+
+    table.wrapOn(c, width, height)
+    table.drawOn(c, 50, y_position)
+
+    # Información adicional
+    c.setFont("Helvetica", 10)
+    c.drawString(50, 60, "Gracias por su compra!")
+    c.drawString(50, 45, "Este documento sirve como comprobante de pago.")
+    c.drawRightString(width - 50, 45, f"Recibo: {timestamp}")
+
+    c.save()
+
+    return pdf_filename
+
+
+@app.route('/pagar', methods=['GET', 'POST'])
+@login_required
+def pagar():
+    """Página para simular pago. En POST valida datos mínimos y genera recibo."""
+    if request.method == 'GET':
+        return render_template('pagar.html')
+
+    # POST: procesar datos de la tarjeta (simulado)
+    titular = request.form.get('titular')
+    numero = request.form.get('numero', '').replace(' ', '')
+    vencimiento = request.form.get('vencimiento')
+    cvv = request.form.get('cvv')
+
+    # Validaciones simples (no reales)
+    errors = []
+    if not titular or len(titular) < 3:
+        errors.append('Nombre del titular inválido')
+    if not numero.isdigit() or not (13 <= len(numero) <= 19):
+        errors.append('Número de tarjeta inválido')
+    if not cvv.isdigit() or not (3 <= len(cvv) <= 4):
+        errors.append('CVV inválido')
+
+    if errors:
+        for e in errors:
+            flash(e, 'danger')
+        return redirect(url_for('pagar'))
+
+    try:
+        # Simular procesamiento (siempre exitoso en esta simulación)
+        conexion = get_db()
+        items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
+        if not items_carrito:
+            flash('No hay items en el carrito', 'warning')
+            return redirect(url_for('ver_carrito'))
+
+        # Generar el PDF y limpiar carrito
+        pdf_filename = _generate_pdf_for_items(items_carrito, current_user)
+        CarritoModel.limpiar_carrito(conexion, current_user.id)
+
+        # Mostrar página que abre el recibo en nueva pestaña y redirige
+        return render_template('pago_exitoso.html', pdf_filename=pdf_filename)
+    except Exception as ex:
+        app.logger.exception('Error al procesar pago/generar recibo:')
+        flash('Ocurrió un error al procesar el pago. Intente nuevamente.', 'danger')
+        return redirect(url_for('ver_carrito'))
 
 @app.route('/carrito/limpiar', methods=['POST'])
 @login_required

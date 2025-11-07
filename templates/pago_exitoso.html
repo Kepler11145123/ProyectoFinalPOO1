@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pago Exitoso</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="payment-page">
+        <div class="success-card">
+            <h1>Pago procesado</h1>
+            <p>Su pago se ha procesado correctamente. En breve se abrirá su recibo en una nueva pestaña.</p>
+            <p>Si la nueva pestaña no aparece, <a id="pdfLink" href="{{ url_for('static', filename='recibos/' + pdf_filename) }}" target="_blank">haga clic aquí para ver el recibo</a>.</p>
+            <div style="margin-top:1rem;">
+                <a class="btn btn-primary" id="openPdfManual" href="{{ url_for('static', filename='recibos/' + pdf_filename) }}" target="_blank">Abrir Recibo</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Intentar abrir el PDF en una nueva pestaña automáticamente
+        (function() {
+            const url = "{{ url_for('static', filename='recibos/' + pdf_filename) }}";
+            try {
+                window.open(url, '_blank');
+                // Después de abrir, redirigir al catálogo o página principal pasado un segundo
+                setTimeout(function() {
+                    window.location.href = "{{ url_for('catalogo') }}";
+                }, 1200);
+            } catch (e) {
+                // Si el navegador bloquea el popup, dejamos el enlace visible para que el usuario haga clic
+                console.warn('No se pudo abrir la nueva pestaña automáticamente', e);
+            }
+        })();
+    </script>
+</body>
+</html>

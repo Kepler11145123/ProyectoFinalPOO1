@@ -65,7 +65,9 @@
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
                 <button type="submit" class="btn btn-danger">Limpiar Carrito</button>
             </form>
-            <button class="btn btn-primary" onclick="alert('¡Funcionalidad de pago en desarrollo!')">Proceder al Pago</button>
+                <form method="GET" action="{{ url_for('pagar') }}" style="display: inline;">
+                    <button type="submit" class="btn btn-primary" {% if not carrito %}disabled{% endif %}>Proceder al Pago</button>
+                </form>
         </div>
         {% else %}
         <div class="empty-cart-page">

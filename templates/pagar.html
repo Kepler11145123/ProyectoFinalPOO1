@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulación de Pago</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="payment-page">
+        <div class="payment-card">
+            <div>
+                <h1>Simulación de Pago</h1>
+                <p class="lead">Ingrese datos de tarjeta (no verídicos) para simular el pago seguro.</p>
+            </div>
+
+            <form method="POST" action="{{ url_for('pagar') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+                <div class="form-field">
+                    <label for="titular">Nombre en la tarjeta</label>
+                    <input id="titular" name="titular" placeholder="Nombre Completo" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-field">
+                        <label for="numero">Número de tarjeta</label>
+                        <input id="numero" name="numero" pattern="[0-9\s]{13,19}" placeholder="1234 5678 9012 3456" required>
+                    </div>
+                    <div style="display:flex; gap:.75rem;">
+                        <div class="form-field" style="flex:1;">
+                            <label for="vencimiento">Vencimiento (MM/AA)</label>
+                            <input id="vencimiento" name="vencimiento" pattern="(0[1-9]|1[0-2])\/\d{2}" placeholder="MM/AA" required>
+                        </div>
+                        <div class="form-field" style="width:110px;">
+                            <label for="cvv">CVV</label>
+                            <input id="cvv" name="cvv" pattern="\d{3,4}" placeholder="123" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-actions">
+                    <a href="{{ url_for('ver_carrito') }}" class="btn btn-secondary">Volver</a>
+                    <button type="submit" class="btn btn-primary">Pagar</button>
+                </div>
+
+                <p class="payment-note">Este es un entorno de prueba. No se procesará ningún cargo real.</p>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
