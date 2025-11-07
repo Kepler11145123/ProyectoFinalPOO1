@@ -16,7 +16,8 @@ from models.entities.producto import Producto
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import Table, TableStyle
+from reportlab.platypus import Table, TableStyle, Paragraph
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from datetime import datetime
 LOGIN_TEMPLATE = 'login.html'
 FORM_PRODUCTO_TEMPLATE = 'form_producto.html'
@@ -373,10 +374,12 @@ def catalogo():
         id_producto = request.form.get('product_id', type=int)
         if id_producto:
             try:
-                # Agregar el producto al carrito en la base de datos
-                CarritoModel.agregar_producto(conexion, current_user.id, id_producto)
+                # Obtener cantidad (si el formulario la envía) o usar 1 por defecto
+                cantidad = request.form.get('quantity', type=int) or 1
+                # Agregar el producto al carrito en la base de datos (respetando stock)
+                CarritoModel.agregar_producto(conexion, current_user.id, id_producto, cantidad)
                 producto = ProductoModel.get_product_by_id(conexion, id_producto)
-                flash(f"{producto.nombre} agregado al carrito", "success")
+                flash(f"{producto.nombre} (x{cantidad}) agregado al carrito", "success")
             except Exception as e:
                 flash(f"Error al agregar producto: {str(e)}", 'danger')
     
@@ -404,15 +407,18 @@ def api_agregar_carrito():
         id_producto = None
         if isinstance(data, dict):
             id_producto = data.get('product_id')
+            cantidad = int(data.get('quantity') or 1)
         else:
             id_producto = request.form.get('product_id')
+            cantidad = request.form.get('quantity', type=int) or 1
 
         if not id_producto:
             return jsonify({'success': False, 'message': 'ID de producto no enviado'}), 400
 
         id_producto = int(id_producto)
         conexion = get_db()
-        CarritoModel.agregar_producto(conexion, current_user.id, id_producto)
+        # Intentar agregar respetando stock
+        CarritoModel.agregar_producto(conexion, current_user.id, id_producto, cantidad)
 
         # Obtener carrito actualizado
         items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
@@ -616,6 +622,18 @@ def _generate_pdf_for_items(items_carrito, usuario):
     agregados = _aggregate_items(items_carrito)
 
     # Preparar datos de la tabla
+    # usar Paragraph para permitir wrap automático de textos largos en la celda de "Producto"
+    styles = getSampleStyleSheet()
+    product_style = ParagraphStyle(
+        name='ProductStyle',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=10,
+        leading=12,    # espacio entre líneas
+        allowWidows=1,
+        allowOrphans=1,
+    )
+
     data = [["Producto", "Cantidad", "Precio Unit.", "Subtotal"]]
     total = 0.0
     for agg in agregados.values():
@@ -623,8 +641,14 @@ def _generate_pdf_for_items(items_carrito, usuario):
         cantidad = int(agg.get('cantidad', 0))
         subtotal = precio * cantidad
         total += subtotal
+
+        # crear Paragraph para el nombre del producto para que se rompa en varias líneas si es necesario
+        nombre_text = agg.get('nombre', '') or ''
+        # escapar caracteres básicos que pueden interferir (mínimo)
+        nombre_text = nombre_text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
+
         data.append([
-            agg.get('nombre', ''),
+            Paragraph(nombre_text, product_style),
             str(cantidad),
             f"${precio:.2f}",
             f"${subtotal:.2f}"
@@ -634,6 +658,7 @@ def _generate_pdf_for_items(items_carrito, usuario):
     data.append(["", "", "Total:", f"${total:.2f}"])
 
     # Crear tabla
+    # Mantener colWidths (ajusta si quieres más/menos ancho para la columna de producto)
     table = Table(data, colWidths=[240, 80, 100, 100])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a5568')),
@@ -644,11 +669,12 @@ def _generate_pdf_for_items(items_carrito, usuario):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
         ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f7fafc')),
-        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
+        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # asegurar alineación superior para celdas con múltiples líneas
     ]))
 
     # Dibujar tabla
-    _, table_height = table.wrap(0, 0)
+    table_width, table_height = table.wrap(0, 0)
     y_position = height - 160 - table_height
     if y_position < 80:
         y_position = 80
