@@ -81,7 +81,8 @@ body {
   background-color: #fff;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  /* Allow dropdowns to escape the card bounds */
+  overflow: visible;
   display: flex;
   flex-direction: column;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -351,3 +352,66 @@ body {
   .form-row { grid-template-columns: 1fr; }
   .payment-actions { justify-content: center; }
 }
+
+/* ===== Custom select for product quantity ===== */
+.custom-select {
+  position: relative;
+  display: inline-block;
+  width: 110px;
+  font-size: 0.95rem;
+}
+.custom-select-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  width: 100%;
+  background: #f5f7fa;
+  border: 1px solid #e3e7ee;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.custom-select-toggle:focus {
+  outline: 2px solid rgba(66,153,225,0.6);
+}
+.custom-select-value {
+  color: #333;
+}
+.custom-select-arrow {
+  width: 14px;
+  height: 14px;
+  transform: translateY(1px);
+}
+.custom-select-options {
+  position: absolute;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e3e7ee;
+  box-shadow: 0 6px 18px rgba(22, 33, 62, 0.08);
+  margin-top: 6px;
+  border-radius: 8px;
+  z-index: 1200;
+  list-style: none;
+  padding: 6px 6px;
+  box-sizing: border-box;
+  max-height: calc(40px * 3); /* show only 3 options, rest scroll */
+  overflow-y: auto;
+  display: none;
+}
+.custom-select-options.show { display: block; }
+.custom-select-options li {
+  padding: 8px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.custom-select-options li:hover,
+.custom-select-options li.selected {
+  background: #f0f9f4;
+}
+
+/* thin nice scrollbar */
+.custom-select-options::-webkit-scrollbar { width: 8px; }
+.custom-select-options::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 6px; }
+

@@ -368,10 +368,12 @@ def catalogo():
         id_producto = request.form.get('product_id', type=int)
         if id_producto:
             try:
-                # Agregar el producto al carrito en la base de datos
-                CarritoModel.agregar_producto(conexion, current_user.id, id_producto)
+                # Obtener cantidad (si el formulario la envía) o usar 1 por defecto
+                cantidad = request.form.get('quantity', type=int) or 1
+                # Agregar el producto al carrito en la base de datos (respetando stock)
+                CarritoModel.agregar_producto(conexion, current_user.id, id_producto, cantidad)
                 producto = ProductoModel.get_product_by_id(conexion, id_producto)
-                flash(f"{producto.nombre} agregado al carrito", "success")
+                flash(f"{producto.nombre} (x{cantidad}) agregado al carrito", "success")
             except Exception as e:
                 flash(f"Error al agregar producto: {str(e)}", 'danger')
     
@@ -399,15 +401,18 @@ def api_agregar_carrito():
         id_producto = None
         if isinstance(data, dict):
             id_producto = data.get('product_id')
+            cantidad = int(data.get('quantity') or 1)
         else:
             id_producto = request.form.get('product_id')
+            cantidad = request.form.get('quantity', type=int) or 1
 
         if not id_producto:
             return jsonify({'success': False, 'message': 'ID de producto no enviado'}), 400
 
         id_producto = int(id_producto)
         conexion = get_db()
-        CarritoModel.agregar_producto(conexion, current_user.id, id_producto)
+        # Intentar agregar respetando stock
+        CarritoModel.agregar_producto(conexion, current_user.id, id_producto, cantidad)
 
         # Obtener carrito actualizado
         items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
