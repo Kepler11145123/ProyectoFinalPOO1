@@ -54,12 +54,13 @@
 
         <div class="ep-add-row">
           <div class="ep-add-left">
-            <label class="ep-label">Añadir producto</label>
+            <label for="new-product-select" class="ep-label">Añadir producto</label>
             <select id="new-product-select" class="ep-select">
-              {% for p in productos %}
-                <option value="{{ p.id }}">{{ p.nombre }}</option>
-              {% endfor %}
+                {% for p in productos %}
+            <option value="{{ p.id }}">{{ p.nombre }}</option>
+                {% endfor %}
             </select>
+
           </div>
           <div class="ep-add-right">
             <input type="number" id="new-product-qty" min="1" value="1" class="ep-input small" />
