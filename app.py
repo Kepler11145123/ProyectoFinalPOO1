@@ -812,14 +812,58 @@ def ver_detalle_pedido(pedido_id):
 @app.route('/admin/pedido/editar/<int:pedido_id>', methods=['GET', 'POST'])
 @login_required
 def editar_pedido_admin(pedido_id):
-    """Permite al administrador editar, eliminar o añadir líneas de detalle de un pedido."""
+    """Permite al administrador editar, eliminar o añadir líneas de detalle de un pedido.
+
+    Esta función está refactorizada: la lógica de procesamiento se delega a pequeños
+    helpers para reducir la complejidad cognitiva y facilitar testing.
+    """
     if current_user.rol != 'administrador':
         flash("No tienes permisos para editar pedidos.", "danger")
         return redirect(url_for('catalogo'))
 
     conexion = get_db()
+
+    def _get_det_id(d):
+        return d.get('id_detalle') if isinstance(d, dict) else getattr(d, 'id_detalle', None)
+
+    def _safe_int(val, default=None):
+        try:
+            return int(val)
+        except Exception:
+            return default
+
+    def _process_existing_details(conexion, detalles):
+        """Procesa cada detalle existente: elimina si se marcó, o actualiza si cambió."""
+        for d in detalles:
+            det_id = _get_det_id(d)
+            if not det_id:
+                continue
+
+            keep = request.form.get(f'keep_{det_id}', '1')
+            if keep == '0':
+                PedidoModel.eliminar_detalle(conexion, det_id)
+                continue
+
+            prod_id = _safe_int(request.form.get(f'producto_{det_id}'))
+            cantidad = _safe_int(request.form.get(f'cantidad_{det_id}'), 1) or 1
+            if prod_id is not None:
+                PedidoModel.actualizar_detalle(conexion, det_id, prod_id, cantidad)
+
+    def _process_new_details(conexion, id_pedido):
+        """Busca claves new_prod_id_* en request.form y crea nuevas líneas."""
+        for key in list(request.form.keys()):
+            if not key.startswith('new_prod_id_'):
+                continue
+            suffix = key[len('new_prod_id_'):]
+            prod_val = request.form.get(key)
+            cant_val = request.form.get(f'new_cant_{suffix}', '1')
+            prod_id = _safe_int(prod_val)
+            cantidad = _safe_int(cant_val, 1)
+            if prod_id is None or cantidad is None:
+                continue
+            PedidoModel.agregar_detalle(conexion, id_pedido, prod_id, cantidad)
+
     try:
-        # Obtener datos actuales
         pedido = PedidoModel.obtener_pedido_por_id(conexion, pedido_id)
         if not pedido:
             flash("Pedido no encontrado.", "warning")
@@ -831,49 +875,9 @@ def editar_pedido_admin(pedido_id):
         if request.method == 'GET':
             return render_template('editar_pedido.html', pedido=pedido, detalles=detalles, productos=productos)
 
-        # POST: procesar cambios
-        # Primero procesar detalles existentes
-        for d in detalles:
-            det_id = d.get('id_detalle') if isinstance(d, dict) else getattr(d, 'id_detalle', None)
-            if not det_id:
-                continue
-
-            keep = request.form.get(f'keep_{det_id}', '1')
-            if keep == '0':
-                # eliminar detalle
-                PedidoModel.eliminar_detalle(conexion, det_id)
-                continue
-
-            # Si se mantiene, comprobar cambios y actualizar
-            prod_val = request.form.get(f'producto_{det_id}')
-            cant_val = request.form.get(f'cantidad_{det_id}')
-            try:
-                prod_id = int(prod_val)
-            except Exception:
-                prod_id = None
-            try:
-                cantidad = int(cant_val)
-            except Exception:
-                cantidad = 1
-
-            # Ejecutar actualización (PedidoModel manejará validaciones mínimas)
-            if prod_id:
-                PedidoModel.actualizar_detalle(conexion, det_id, prod_id, cantidad)
-
-        # Luego, procesar nuevas líneas que vienen en el formulario bajo prefijo new_prod_id_
-        for key in request.form:
-            if key.startswith('new_prod_id_'):
-                new_id_suffix = key[len('new_prod_id_'):]
-                prod_val = request.form.get(key)
-                cant_key = f'new_cant_{new_id_suffix}'
-                cant_val = request.form.get(cant_key, '1')
-                try:
-                    prod_id = int(prod_val)
-                    cantidad = int(cant_val)
-                except Exception:
-                    continue
-
-                PedidoModel.agregar_detalle(conexion, pedido_id, prod_id, cantidad)
+        # POST: delegar el procesamiento en helpers para mantener la función legible
+        _process_existing_details(conexion, detalles)
+        _process_new_details(conexion, pedido_id)
 
         flash('Pedido actualizado correctamente.', 'success')
         return redirect(url_for('ver_detalle_pedido', pedido_id=pedido_id))

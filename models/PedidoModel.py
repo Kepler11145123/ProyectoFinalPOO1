@@ -35,7 +35,7 @@ class PedidoModel:
             return id_pedido
         except Exception as ex:
             conexion.rollback()
-            raise Exception(f"Error al crear el pedido: {ex}")
+            raise ValueError(f"Error al crear el pedido: {ex}")
 
     @classmethod
     def obtener_todos_pedidos(cls, conexion):
@@ -74,7 +74,7 @@ class PedidoModel:
             cursor.close()
             return pedidos
         except Exception as ex:
-            raise Exception(f"Error al obtener los pedidos: {ex}")
+            raise ValueError(f"Error al obtener los pedidos: {ex}")
 
     @classmethod
     def obtener_detalles_pedido(cls, conexion, id_pedido):
@@ -110,7 +110,7 @@ class PedidoModel:
             cursor.close()
             return detalles
         except Exception as ex:
-            raise Exception(f"Error al obtener los detalles del pedido: {ex}")
+            raise ValueError(f"Error al obtener los detalles del pedido: {ex}")
 
     # Compatibilidad: nombre singular usado en app.py
     @classmethod
@@ -155,7 +155,7 @@ class PedidoModel:
                 'total': float(row[6])
             }
         except Exception as ex:
-            raise Exception(f"Error al obtener el pedido por ID: {ex}")
+            raise ValueError(f"Error al obtener el pedido por ID: {ex}")
 
     @classmethod
     def actualizar_detalle(cls, conexion, id_detalle, id_producto, cantidad):
@@ -170,7 +170,7 @@ class PedidoModel:
             return True
         except Exception as ex:
             conexion.rollback()
-            raise Exception(f"Error al actualizar detalle: {ex}")
+            raise ValueError(f"Error al actualizar detalle: {ex}")
 
     @classmethod
     def agregar_detalle(cls, conexion, id_pedido, id_producto, cantidad):
@@ -188,7 +188,7 @@ class PedidoModel:
             return id_detalle
         except Exception as ex:
             conexion.rollback()
-            raise Exception(f"Error al agregar detalle: {ex}")
+            raise ValueError(f"Error al agregar detalle: {ex}")
 
     @classmethod
     def eliminar_detalle(cls, conexion, id_detalle):
@@ -201,4 +201,4 @@ class PedidoModel:
             return True
         except Exception as ex:
             conexion.rollback()
-            raise Exception(f"Error al eliminar detalle: {ex}")
+            raise ValueError(f"Error al eliminar detalle: {ex}")
