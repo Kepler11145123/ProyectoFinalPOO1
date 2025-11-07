@@ -29,10 +29,13 @@
     <main class="admin-container">
       <h1>Gestión de Productos</h1>
       
-      <!-- Botón para ir al formulario de crear nuevo producto -->
-      <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">Añadir Nuevo Producto</a>
+      <!-- 🆕 SECCIÓN DE BOTONES DE ADMINISTRACIÓN -->
+      <div class="admin-actions" style="margin-bottom: 20px; display: flex; gap: 10px;">
+        <a href="{{ url_for('buscar_pedidos') }}" class="btn btn-primary">📦 Ver Todos los Pedidos</a>
+        <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">➕ Añadir Nuevo Producto</a>
+      </div>
 
-      
+      <!-- Tabla de productos -->
       <table class="product-table">
         <thead>
           <tr>

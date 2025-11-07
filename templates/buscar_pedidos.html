@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Búsqueda de Pedidos</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/buscar_pedidos.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='buscar_pedidos.css') }}">
 </head>
 <body>
     <div class="container">
@@ -53,6 +53,8 @@
                         <td>
                             <a href="{{ url_for('ver_detalle_pedido', pedido_id=pedido.id_pedido) }}" 
                                class="btn btn-primary btn-small">Ver Detalle</a>
+                                     <a href="{{ url_for('editar_pedido_admin', pedido_id=pedido.id_pedido) }}" 
+                                         class="btn btn-secondary btn-small" style="margin-left:6px;">Editar</a>
                         </td>
                     </tr>
                     {% endfor %}

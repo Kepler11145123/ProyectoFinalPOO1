@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Editar Pedido #{{ pedido.id_pedido }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='editar_pedido.css') }}">
+</head>
+<body>
+  <main class="ep-container">
+    <section class="ep-card">
+      <header class="ep-card-header">
+        <div>
+          <h1 class="ep-title">Editar Pedido <span class="ep-badge">#{{ pedido.id_pedido }}</span></h1>
+          <p class="ep-sub">Cliente: <strong>{{ pedido.nombre_cliente }}</strong> — {{ pedido.correo_cliente }}</p>
+        </div>
+        <a href="{{ url_for('buscar_pedidos') }}" class="ep-btn ep-btn-ghost">← Volver</a>
+      </header>
+
+      <form method="POST" action="{{ url_for('editar_pedido_admin', pedido_id=pedido.id_pedido) }}" class="ep-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+
+        <div class="ep-table-wrap">
+          <table class="ep-table">
+            <thead>
+              <tr>
+                <th>Producto</th>
+                <th style="width:120px">Cantidad</th>
+                <th style="width:140px">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="detalles-body">
+              {% for d in detalles %}
+              <tr class="ep-row" data-detalle-id="{{ d.id_detalle }}">
+                <td>
+                  <select name="producto_{{ d.id_detalle }}" class="ep-select">
+                    {% for p in productos %}
+                      <option value="{{ p.id }}" {% if p.id == d.id_producto %}selected{% endif %}>{{ p.nombre }}</option>
+                    {% endfor %}
+                  </select>
+                </td>
+                <td>
+                  <input type="number" min="1" name="cantidad_{{ d.id_detalle }}" value="{{ d.cantidad }}" class="ep-input" />
+                </td>
+                <td class="ep-actions">
+                  <button type="button" class="ep-btn ep-btn-danger" onclick="marcarEliminar({{ d.id_detalle }})">Eliminar</button>
+                  <input type="hidden" name="keep_{{ d.id_detalle }}" value="1" id="keep_{{ d.id_detalle }}" />
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="ep-add-row">
+          <div class="ep-add-left">
+            <label class="ep-label">Añadir producto</label>
+            <select id="new-product-select" class="ep-select">
+              {% for p in productos %}
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="ep-add-right">
+            <input type="number" id="new-product-qty" min="1" value="1" class="ep-input small" />
+            <button type="button" class="ep-btn ep-btn-primary" onclick="agregarLinea()">Agregar línea</button>
+          </div>
+        </div>
+
+        <div class="ep-form-footer">
+          <button type="button" class="ep-btn ep-btn-secondary" onclick="window.location='{{ url_for('buscar_pedidos') }}'">Cancelar</button>
+          <button type="submit" class="ep-btn ep-btn-success">Guardar cambios</button>
+        </div>
+      </form>
+    </section>
+  </main>
+
+  <script>
+    function marcarEliminar(id) {
+      const keep = document.getElementById('keep_' + id);
+      if (keep) {
+        keep.value = '0';
+        const row = document.querySelector('tr[data-detalle-id="' + id + '"]');
+        if (row) row.classList.add('ep-removed');
+      }
+    }
+
+    function agregarLinea() {
+      const select = document.getElementById('new-product-select');
+      const qty = document.getElementById('new-product-qty').value || 1;
+      const prodId = select.value;
+      const prodText = select.options[select.selectedIndex].text;
+
+      const tbody = document.getElementById('detalles-body');
+      const newId = 'new_' + Date.now();
+
+      const tr = document.createElement('tr');
+      tr.setAttribute('data-detalle-id', newId);
+      tr.className = 'ep-row';
+      tr.innerHTML = `
+        <td class="ep-new-prod">
+          <input type="hidden" name="new_prod_id_${newId}" value="${prodId}" />
+          <span class="ep-new-text">${prodText}</span>
+        </td>
+        <td>
+          <input type="number" min="1" name="new_cant_${newId}" value="${qty}" class="ep-input" />
+        </td>
+        <td class="ep-actions">
+          <button type="button" class="ep-btn ep-btn-danger" onclick="this.closest('tr').remove()">Eliminar</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    }
+  </script>
+</body>
+</html>

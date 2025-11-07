@@ -1,5 +1,5 @@
 import re
-from flask import Flask, render_template, request, redirect, url_for, session, flash, g, get_flashed_messages, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, g, get_flashed_messages, jsonify, send_file
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_wtf.csrf import CSRFProtect
 import psycopg2
@@ -13,11 +13,11 @@ from models.UserModel import UserModel
 from models.ProductoModel import ProductoModel
 from models.CarritoModel import CarritoModel
 from models.entities.producto import Producto
+from models.PedidoModel import PedidoModel
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import Table, TableStyle, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import Table, TableStyle
 from datetime import datetime
 LOGIN_TEMPLATE = 'login.html'
 FORM_PRODUCTO_TEMPLATE = 'form_producto.html'
@@ -372,14 +372,18 @@ def catalogo():
     # Manejar agregar al carrito
     if request.method == 'POST':
         id_producto = request.form.get('product_id', type=int)
+        cantidad = request.form.get('quantity') or request.form.get('cantidad') or 1
+        try:
+            cantidad = int(cantidad)
+        except Exception:
+            cantidad = 1
+
         if id_producto:
             try:
-                # Obtener cantidad (si el formulario la envía) o usar 1 por defecto
-                cantidad = request.form.get('quantity', type=int) or 1
-                # Agregar el producto al carrito en la base de datos (respetando stock)
+                # Agregar el producto al carrito en la base de datos con la cantidad solicitada
                 CarritoModel.agregar_producto(conexion, current_user.id, id_producto, cantidad)
                 producto = ProductoModel.get_product_by_id(conexion, id_producto)
-                flash(f"{producto.nombre} (x{cantidad}) agregado al carrito", "success")
+                flash(f"{producto.nombre} agregado al carrito (x{cantidad})", "success")
             except Exception as e:
                 flash(f"Error al agregar producto: {str(e)}", 'danger')
     
@@ -405,30 +409,39 @@ def api_agregar_carrito():
     try:
         data = request.get_json(force=True, silent=True) or request.form
         id_producto = None
+        cantidad = 1
         if isinstance(data, dict):
             id_producto = data.get('product_id')
-            cantidad = int(data.get('quantity') or 1)
+            # may be 'quantity' or 'cantidad'
+            cantidad = data.get('quantity') or data.get('cantidad') or 1
         else:
             id_producto = request.form.get('product_id')
-            cantidad = request.form.get('quantity', type=int) or 1
+            cantidad = request.form.get('quantity') or request.form.get('cantidad') or 1
 
         if not id_producto:
             return jsonify({'success': False, 'message': 'ID de producto no enviado'}), 400
 
         id_producto = int(id_producto)
+        try:
+            cantidad = int(cantidad)
+        except Exception:
+            cantidad = 1
+
         conexion = get_db()
-        # Intentar agregar respetando stock
+        # Pass quantity to agregar_producto so it inserts the desired number of units
         CarritoModel.agregar_producto(conexion, current_user.id, id_producto, cantidad)
 
         # Obtener carrito actualizado
         items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
         total = calcular_total_carrito(items_carrito)
 
+        # compute total units in cart (sum cantidades) for a more intuitive counter
+        count_units = sum(int(it.get('cantidad', 0)) for it in items_carrito)
         return jsonify({
             'success': True,
             'message': 'Producto agregado al carrito',
             'items': items_carrito,
-            'count': len(items_carrito),
+            'count': count_units,
             'total': total
         })
     except Exception as ex:
@@ -457,12 +470,12 @@ def api_eliminar_carrito():
 
         items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
         total = calcular_total_carrito(items_carrito)
-
+        count_units = sum(int(it.get('cantidad', 0)) for it in items_carrito)
         return jsonify({
             'success': True,
             'message': 'Producto eliminado del carrito',
             'items': items_carrito,
-            'count': len(items_carrito),
+            'count': count_units,
             'total': total
         })
     except Exception as ex:
@@ -480,12 +493,12 @@ def api_limpiar_carrito():
 
         items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
         total = calcular_total_carrito(items_carrito)
-
+        count_units = sum(int(it.get('cantidad', 0)) for it in items_carrito)
         return jsonify({
             'success': True,
             'message': 'Carrito limpiado',
             'items': items_carrito,
-            'count': len(items_carrito),
+            'count': count_units,
             'total': total
         })
     except Exception as ex:
@@ -536,7 +549,12 @@ def generar_recibo():
         # Limpiar carrito
         CarritoModel.limpiar_carrito(conexion, current_user.id)
 
-        return redirect(url_for('static', filename=f'recibos/{pdf_filename}'))
+        # Enviar PDF para visualización inline; si falla, redirigir al archivo estático
+        pdf_path = os.path.join(app.root_path, 'static', 'recibos', pdf_filename)
+        try:
+            return send_file(pdf_path, mimetype='application/pdf', as_attachment=False, download_name=pdf_filename)
+        except Exception:
+            return redirect(url_for('static', filename=f'recibos/{pdf_filename}'))
     except Exception as e:
         app.logger.error(f"Error generando recibo: {e}")
         flash("Error al generar el recibo", "danger")
@@ -622,18 +640,6 @@ def _generate_pdf_for_items(items_carrito, usuario):
     agregados = _aggregate_items(items_carrito)
 
     # Preparar datos de la tabla
-    # usar Paragraph para permitir wrap automático de textos largos en la celda de "Producto"
-    styles = getSampleStyleSheet()
-    product_style = ParagraphStyle(
-        name='ProductStyle',
-        parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=10,
-        leading=12,    # espacio entre líneas
-        allowWidows=1,
-        allowOrphans=1,
-    )
-
     data = [["Producto", "Cantidad", "Precio Unit.", "Subtotal"]]
     total = 0.0
     for agg in agregados.values():
@@ -641,14 +647,8 @@ def _generate_pdf_for_items(items_carrito, usuario):
         cantidad = int(agg.get('cantidad', 0))
         subtotal = precio * cantidad
         total += subtotal
-
-        # crear Paragraph para el nombre del producto para que se rompa en varias líneas si es necesario
-        nombre_text = agg.get('nombre', '') or ''
-        # escapar caracteres básicos que pueden interferir (mínimo)
-        nombre_text = nombre_text.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
-
         data.append([
-            Paragraph(nombre_text, product_style),
+            agg.get('nombre', ''),
             str(cantidad),
             f"${precio:.2f}",
             f"${subtotal:.2f}"
@@ -658,7 +658,6 @@ def _generate_pdf_for_items(items_carrito, usuario):
     data.append(["", "", "Total:", f"${total:.2f}"])
 
     # Crear tabla
-    # Mantener colWidths (ajusta si quieres más/menos ancho para la columna de producto)
     table = Table(data, colWidths=[240, 80, 100, 100])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a5568')),
@@ -669,12 +668,11 @@ def _generate_pdf_for_items(items_carrito, usuario):
         ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
         ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
         ('BACKGROUND', (0, -1), (-1, -1), colors.HexColor('#f7fafc')),
-        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold'),
-        ('VALIGN', (0, 0), (-1, -1), 'TOP'),  # asegurar alineación superior para celdas con múltiples líneas
+        ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')
     ]))
 
     # Dibujar tabla
-    table_width, table_height = table.wrap(0, 0)
+    _, table_height = table.wrap(0, 0)
     y_position = height - 160 - table_height
     if y_position < 80:
         y_position = 80
@@ -688,7 +686,13 @@ def _generate_pdf_for_items(items_carrito, usuario):
     c.drawString(50, 45, "Este documento sirve como comprobante de pago.")
     c.drawRightString(width - 50, 45, f"Recibo: {timestamp}")
 
+    # Guardar el documento una sola vez
     c.save()
+    # Log location for easier debugging
+    try:
+        app.logger.info(f"Recibo generado en: {pdf_path}")
+    except Exception:
+        pass
 
     return pdf_filename
 
@@ -726,17 +730,158 @@ def pagar():
         if not items_carrito:
             flash('No hay items en el carrito', 'warning')
             return redirect(url_for('ver_carrito'))
+        total = calcular_total_carrito(items_carrito)
+
+        id_pedido = PedidoModel.crear_pedido(conexion, current_user.id, total, items_carrito)
+        app.logger.info(f"Pedido {id_pedido} creado para usuario {current_user.id} por ${total:.2f}")
 
         # Generar el PDF y limpiar carrito
         pdf_filename = _generate_pdf_for_items(items_carrito, current_user)
         CarritoModel.limpiar_carrito(conexion, current_user.id)
 
-        # Mostrar página que abre el recibo en nueva pestaña y redirige
-        return render_template('pago_exitoso.html', pdf_filename=pdf_filename)
-    except Exception:
-        app.logger.exception('Error al procesar pago/generar recibo:')
+        # Construir URL pública del PDF
+        pdf_url = url_for('static', filename=f'recibos/{pdf_filename}')
+
+        # Si la petición viene desde JS (AJAX), responder con JSON que contiene la URL.
+        # Nuestro JS abrirá una pestaña en blanco primero (user gesture) y luego cargará esta URL.
+        is_xhr = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.form.get('ajax') == '1'
+        if is_xhr:
+            return jsonify({'success': True, 'pdf_url': pdf_url})
+
+        # Si no es AJAX, intentar enviar el PDF inline como antes
+        pdf_path = os.path.join(app.root_path, 'static', 'recibos', pdf_filename)
+        try:
+            return send_file(pdf_path, mimetype='application/pdf', as_attachment=False, download_name=pdf_filename)
+        except Exception:
+            # Fallback a redirect si por alguna razón send_file falla
+            return redirect(pdf_url)
+
+    except Exception as ex:
+        app.logger.error(f"Error procesando pago: {ex}")
         flash('Ocurrió un error al procesar el pago. Intente nuevamente.', 'danger')
         return redirect(url_for('ver_carrito'))
+    
+
+@app.route('/buscar_pedidos')
+@login_required
+def buscar_pedidos():
+    """Solo administradores pueden ver todos los pedidos"""
+    if current_user.rol != 'administrador':
+        flash("No tienes permisos para ver los pedidos.", "danger")
+        return redirect(url_for('catalogo'))
+    
+    try:
+        conexion = get_db()
+        pedidos = PedidoModel.obtener_todos_pedidos(conexion)
+        return render_template('buscar_pedidos.html', pedidos=pedidos)
+    except Exception as ex:
+        app.logger.error(f"Error al cargar pedidos: {ex}")
+        flash("Error al cargar los pedidos.", "danger")
+        return redirect(url_for('panel_admin'))
+
+
+@app.route('/pedido/detalle/<int:pedido_id>')
+@login_required
+def ver_detalle_pedido(pedido_id):
+    """Ver detalle de un pedido específico"""
+    if current_user.rol != 'administrador':
+        flash("No tienes permisos para ver este pedido.", "danger")
+        return redirect(url_for('catalogo'))
+    
+    try:
+        conexion = get_db()
+        
+        # Obtener información del pedido
+        pedido = PedidoModel.obtener_pedido_por_id(conexion, pedido_id)
+        
+        if not pedido:
+            flash("Pedido no encontrado.", "warning")
+            return redirect(url_for('buscar_pedidos'))
+        
+        # Obtener detalles del pedido
+        detalles = PedidoModel.obtener_detalle_pedido(conexion, pedido_id)
+        
+        return render_template('detalle_pedido.html', pedido=pedido, detalles=detalles)
+        
+    except Exception as ex:
+        app.logger.error(f"Error al ver detalle del pedido: {ex}")
+        flash("Error al cargar el detalle del pedido.", "danger")
+        return redirect(url_for('buscar_pedidos'))
+
+
+@app.route('/admin/pedido/editar/<int:pedido_id>', methods=['GET', 'POST'])
+@login_required
+def editar_pedido_admin(pedido_id):
+    """Permite al administrador editar, eliminar o añadir líneas de detalle de un pedido."""
+    if current_user.rol != 'administrador':
+        flash("No tienes permisos para editar pedidos.", "danger")
+        return redirect(url_for('catalogo'))
+
+    conexion = get_db()
+    try:
+        # Obtener datos actuales
+        pedido = PedidoModel.obtener_pedido_por_id(conexion, pedido_id)
+        if not pedido:
+            flash("Pedido no encontrado.", "warning")
+            return redirect(url_for('buscar_pedidos'))
+
+        detalles = PedidoModel.obtener_detalle_pedido(conexion, pedido_id)
+        productos = ProductoModel.get_all_products(conexion)
+
+        if request.method == 'GET':
+            return render_template('editar_pedido.html', pedido=pedido, detalles=detalles, productos=productos)
+
+        # POST: procesar cambios
+        # Primero procesar detalles existentes
+        for d in detalles:
+            det_id = d.get('id_detalle') if isinstance(d, dict) else getattr(d, 'id_detalle', None)
+            if not det_id:
+                continue
+
+            keep = request.form.get(f'keep_{det_id}', '1')
+            if keep == '0':
+                # eliminar detalle
+                PedidoModel.eliminar_detalle(conexion, det_id)
+                continue
+
+            # Si se mantiene, comprobar cambios y actualizar
+            prod_val = request.form.get(f'producto_{det_id}')
+            cant_val = request.form.get(f'cantidad_{det_id}')
+            try:
+                prod_id = int(prod_val)
+            except Exception:
+                prod_id = None
+            try:
+                cantidad = int(cant_val)
+            except Exception:
+                cantidad = 1
+
+            # Ejecutar actualización (PedidoModel manejará validaciones mínimas)
+            if prod_id:
+                PedidoModel.actualizar_detalle(conexion, det_id, prod_id, cantidad)
+
+        # Luego, procesar nuevas líneas que vienen en el formulario bajo prefijo new_prod_id_
+        for key in request.form:
+            if key.startswith('new_prod_id_'):
+                new_id_suffix = key[len('new_prod_id_'):]
+                prod_val = request.form.get(key)
+                cant_key = f'new_cant_{new_id_suffix}'
+                cant_val = request.form.get(cant_key, '1')
+                try:
+                    prod_id = int(prod_val)
+                    cantidad = int(cant_val)
+                except Exception:
+                    continue
+
+                PedidoModel.agregar_detalle(conexion, pedido_id, prod_id, cantidad)
+
+        flash('Pedido actualizado correctamente.', 'success')
+        return redirect(url_for('ver_detalle_pedido', pedido_id=pedido_id))
+
+    except Exception as ex:
+        app.logger.error(f"Error editando pedido {pedido_id}: {ex}")
+        flash('Ocurrió un error al actualizar el pedido.', 'danger')
+        return redirect(url_for('buscar_pedidos'))
 
 @app.route('/carrito/limpiar', methods=['POST'])
 @login_required
@@ -784,6 +929,8 @@ def recuperar():
             return render_template(RECUPERAR_TEMPLATE, correo=correo)
              
     return render_template(RECUPERAR_TEMPLATE)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
