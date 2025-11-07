@@ -531,88 +531,81 @@ def generar_recibo():
         return redirect(url_for('ver_carrito'))
 
 
+def _normalize_item(item):
+    """Normaliza un item devolviendo dict con keys: id, nombre, precio, cantidad."""
+    # Si ya es un dict
+    if isinstance(item, dict):
+        return {
+            'id': item.get('id') or item.get('producto_id') or item.get('product_id'),
+            'nombre': item.get('nombre') or item.get('titulo') or item.get('name') or '',
+            'precio': float(item.get('precio') or item.get('price') or 0),
+            'cantidad': int(item.get('cantidad') or item.get('qty') or item.get('quantity') or 1)
+        }
+
+    # Intentar atributos del objeto
+    pid = getattr(item, 'id', None) or getattr(item, 'producto_id', None) or getattr(item, 'product_id', None)
+    nombre = getattr(item, 'nombre', None) or getattr(item, 'titulo', None) or getattr(item, 'name', None) or ''
+    precio = getattr(item, 'precio', None) or getattr(item, 'price', None) or 0
+    cantidad = getattr(item, 'cantidad', None) or getattr(item, 'qty', None) or getattr(item, 'quantity', None) or 1
+
+    try:
+        return {'id': pid, 'nombre': nombre, 'precio': float(precio), 'cantidad': int(cantidad)}
+    except Exception:
+        # Fallback: si es secuencia (tupla/lista)
+        try:
+            pid = item[0]; nombre = item[1]; precio = float(item[2]); cantidad = int(item[3])
+            return {'id': pid, 'nombre': nombre, 'precio': precio, 'cantidad': cantidad}
+        except Exception:
+            return {'id': None, 'nombre': str(item), 'precio': 0.0, 'cantidad': 1}
+
+
+def _aggregate_items(items_carrito):
+    """Agrupa items por id y suma cantidades, devuelve dict de agregados."""
+    agregados = {}
+    for item in items_carrito:
+        it = _normalize_item(item)
+        pid = it['id']
+        precio = float(it['precio'])
+        cantidad = int(it['cantidad'])
+        nombre = it['nombre']
+
+        if pid in agregados:
+            agregados[pid]['cantidad'] += cantidad
+            # actualizar precio a la última conocida (comportamiento previo)
+            agregados[pid]['precio'] = precio
+        else:
+            agregados[pid] = {'id': pid, 'nombre': nombre, 'precio': precio, 'cantidad': cantidad}
+    return agregados
+
+
 def _generate_pdf_for_items(items_carrito, usuario):
-    """Genera el PDF a partir de una lista de items (diccionarios) y retorna el nombre de archivo generado."""
-    # Crear directorio para recibos si no existe
+    """Genera el PDF a partir de una lista de items y retorna el nombre de archivo generado."""
     recibos_dir = os.path.join(app.root_path, 'static', 'recibos')
     os.makedirs(recibos_dir, exist_ok=True)
 
-    # Nombre único para el PDF
     timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
     pdf_filename = f"recibo_{getattr(usuario, 'id', 'anon')}_{timestamp}.pdf"
     pdf_path = os.path.join(recibos_dir, pdf_filename)
 
-    # Crear PDF
     c = canvas.Canvas(pdf_path, pagesize=letter)
     width, height = letter
 
-    # Encabezado
+    # Encabezado y datos cliente/fecha
     c.setFont("Helvetica-Bold", 18)
     c.drawString(50, height - 50, "Recibo de Compra")
-
-    # Información del cliente y fecha
     c.setFont("Helvetica", 11)
     c.drawString(50, height - 80, f"Cliente: {getattr(usuario, 'nombre', '')}")
-    correo = getattr(usuario, 'correo', '') if hasattr(usuario, 'correo') else ''
+    correo = getattr(usuario, 'correo', '')
     c.drawString(50, height - 100, f"Correo: {correo}")
     fecha_str = datetime.now().strftime('%d/%m/%Y %H:%M:%S')
     c.drawString(50, height - 120, f"Fecha: {fecha_str}")
 
-    # Agrupar productos por ID y sumar cantidades
-    agregados = {}
+    # Agrupar items (delegado a función separada)
+    agregados = _aggregate_items(items_carrito)
 
-    def _as_dict(item):
-        """Normaliza un item retornando un dict con claves: id, nombre, precio, cantidad."""
-        # Si ya es dict-like
-        if isinstance(item, dict):
-            return {
-                'id': item.get('id') or item.get('producto_id') or item.get('product_id'),
-                'nombre': item.get('nombre') or item.get('titulo') or item.get('name') or '',
-                'precio': float(item.get('precio') or item.get('price') or 0),
-                'cantidad': int(item.get('cantidad') or item.get('qty') or item.get('quantity') or 1)
-            }
-
-        # Si es un objeto con atributos
-        try:
-            pid = getattr(item, 'id', None) or getattr(item, 'producto_id', None) or getattr(item, 'product_id', None)
-            nombre = getattr(item, 'nombre', None) or getattr(item, 'titulo', None) or getattr(item, 'name', None) or ''
-            precio = getattr(item, 'precio', None) or getattr(item, 'price', None) or 0
-            cantidad = getattr(item, 'cantidad', None) or getattr(item, 'qty', None) or getattr(item, 'quantity', None) or 1
-            return {
-                'id': pid,
-                'nombre': nombre,
-                'precio': float(precio),
-                'cantidad': int(cantidad)
-            }
-        except Exception:
-            # Fallback: intentar acceder por índice si es tupla/list
-            try:
-                # Asumimos orden: id, nombre, precio, cantidad
-                pid = item[0]
-                nombre = item[1]
-                precio = float(item[2])
-                cantidad = int(item[3])
-                return {'id': pid, 'nombre': nombre, 'precio': precio, 'cantidad': cantidad}
-            except Exception:
-                # Si falla, devolver un item neutro para evitar romper toda la generación
-                return {'id': None, 'nombre': str(item), 'precio': 0.0, 'cantidad': 1}
-
-    for item in items_carrito:
-        it = _as_dict(item)
-        pid = it['id']
-        nombre = it['nombre']
-        precio = float(it['precio'])
-        cantidad = int(it['cantidad'])
-
-        if pid in agregados:
-            agregados[pid]['cantidad'] += cantidad
-            agregados[pid]['precio'] = precio
-        else:
-            agregados[pid] = {'id': pid, 'nombre': nombre, 'precio': precio, 'cantidad': cantidad}
-
-    # Preparar datos de la tabla
+    # Preparar datos para la tabla
     data = [["Producto", "Cantidad", "Precio Unit.", "Subtotal"]]
-    total = 0
+    total = 0.0
     for agg in agregados.values():
         precio = float(agg.get('precio', 0))
         cantidad = int(agg.get('cantidad', 0))
@@ -625,10 +618,8 @@ def _generate_pdf_for_items(items_carrito, usuario):
             f"${subtotal:.2f}"
         ])
 
-    # Fila de total
     data.append(["", "", "Total:", f"${total:.2f}"])
 
-    # Crear tabla
     table = Table(data, colWidths=[240, 80, 100, 100])
     table.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#4a5568')),
@@ -642,7 +633,7 @@ def _generate_pdf_for_items(items_carrito, usuario):
         ('FONTNAME', (0, -1), (-1, -1), 'Helvetica-Bold')
     ]))
 
-    # Dibujar tabla
+    # Dibujar tabla en la página
     table_width, table_height = table.wrap(0, 0)
     y_position = height - 160 - table_height
     if y_position < 80:
@@ -651,14 +642,12 @@ def _generate_pdf_for_items(items_carrito, usuario):
     table.wrapOn(c, width, height)
     table.drawOn(c, 50, y_position)
 
-    # Información adicional
     c.setFont("Helvetica", 10)
     c.drawString(50, 60, "Gracias por su compra!")
     c.drawString(50, 45, "Este documento sirve como comprobante de pago.")
     c.drawRightString(width - 50, 45, f"Recibo: {timestamp}")
 
     c.save()
-
     return pdf_filename
 
 
