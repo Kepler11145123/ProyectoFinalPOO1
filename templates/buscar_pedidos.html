@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Búsqueda de Pedidos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/buscar_pedidos.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="header-actions">
+            <div>
+                <h1>📦 Búsqueda de Pedidos</h1>
+                <p class="subtitle">Historial completo de pedidos</p>
+            </div>
+            <a href="{{ url_for('panel_admin') }}" class="btn btn-secondary">← Volver</a>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 Buscar por nombre, correo o ID..." onkeyup="filtrarPedidos()">
+        </div>
+
+        {% if pedidos %}
+            <table id="tablaPedidos">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Cliente</th>
+                        <th>Correo</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for pedido in pedidos %}
+                    <tr>
+                        <td><strong>#{{ pedido.id_pedido }}</strong></td>
+                        <td>{{ pedido.nombre_cliente }}</td>
+                        <td>{{ pedido.correo_cliente }}</td>
+                        <td>{{ pedido.data_pedido.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td><strong>${{ "%.2f"|format(pedido.total) }}</strong></td>
+                        <td><span class="badge">{{ pedido.status }}</span></td>
+                        <td>
+                            <a href="{{ url_for('ver_detalle_pedido', pedido_id=pedido.id_pedido) }}" 
+                               class="btn btn-primary btn-small">Ver Detalle</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="no-pedidos">
+                <h3>No hay pedidos registrados</h3>
+                <p>Cuando los clientes compren, aparecerán aquí.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script src="{{ url_for('static', filename='js/buscar_pedidos.js') }}"></script>
+</body>
+</html>

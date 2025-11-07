@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalle del Pedido #{{ pedido.id_pedido }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/detalle_pedido.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>📦 Detalle del Pedido #{{ pedido.id_pedido }}</h1>
+
+        <div class="info-card">
+            <div class="info-row">
+                <span class="info-label">Cliente:</span>
+                <span class="info-value">{{ pedido.nombre_cliente }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Correo:</span>
+                <span class="info-value">{{ pedido.correo_cliente }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Fecha:</span>
+                <span class="info-value">{{ pedido.data_pedido.strftime('%d/%m/%Y %H:%M:%S') }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Estado:</span>
+                <span class="info-value">{{ pedido.status }}</span>
+            </div>
+        </div>
+
+        <h2>Productos del Pedido</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Precio Unit.</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for detalle in detalles %}
+                <tr>
+                    <td>{{ detalle.nombre_producto }}</td>
+                    <td>{{ detalle.cantidad }}</td>
+                    <td>${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                    <td>${{ "%.2f"|format(detalle.subtotal) }}</td>
+                </tr>
+                {% endfor %}
+                <tr class="total-row">
+                    <td colspan="3">TOTAL</td>
+                    <td>${{ "%.2f"|format(pedido.total) }}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <a href="{{ url_for('buscar_pedidos') }}" class="btn">← Volver a Pedidos</a>
+    </div>
+</body>
+</html>
