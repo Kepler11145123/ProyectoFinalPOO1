@@ -284,7 +284,7 @@
           function onOptionSelected(li, options, input, valueEl, toggle) {
             options.querySelectorAll('li').forEach(x => x.classList.remove('selected'));
             li.classList.add('selected');
-            const v = li.getAttribute('data-value');
+            const v = li.dataset && li.dataset.value !== undefined ? li.dataset.value : li.getAttribute('data-value');
             if (input) input.value = v;
             if (valueEl) valueEl.textContent = v;
             options.classList.remove('show');
