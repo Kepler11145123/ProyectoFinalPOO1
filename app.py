@@ -643,7 +643,7 @@ def _generate_pdf_for_items(items_carrito, usuario):
     ]))
 
     # Dibujar tabla
-    table_width, table_height = table.wrap(0, 0)
+    _, table_height = table.wrap(0, 0)
     y_position = height - 160 - table_height
     if y_position < 80:
         y_position = 80
@@ -672,7 +672,6 @@ def pagar():
     # POST: procesar datos de la tarjeta (simulado)
     titular = request.form.get('titular')
     numero = request.form.get('numero', '').replace(' ', '')
-    vencimiento = request.form.get('vencimiento')
     cvv = request.form.get('cvv')
 
     # Validaciones simples (no reales)
