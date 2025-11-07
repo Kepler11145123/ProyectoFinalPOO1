@@ -211,13 +211,16 @@ def _handle_create_product():
             return render_template(FORM_PRODUCTO_TEMPLATE, accion=ACTION_AÑADIR)
 
 def _get_product_form_data():
+    stock = request.form.get('stock', type=int)
+    if stock is None or stock < 0:
+        stock = 0
     return {
         'nombre': request.form.get('nombre','').strip(),
         'descripcion': request.form.get('descripcion','').strip(),
         'categoria': request.form.get('categoria','').strip(),
         'nombre_columna_imagen': request.form.get('nombre_columna_imagen','').strip(),
         'precio': request.form.get('precio',type=float),
-        'stock': request.form.get('stock',type=int)
+        'stock': stock
     }
 
 def _validate_product_data(form_data):
@@ -273,7 +276,10 @@ def editar_producto(id):
             nombre_columna_imagen = request.form.get('nombre_columna_imagen', '').strip()
             precio = request.form.get('precio', type=float)
             stock = request.form.get('stock', type=int)
-            
+
+            if stock is None or stock <0:
+                flash("El stock no puede ser negativo.", "danger")
+                return redirect(url_for('editar_producto', id=id))
             
             # Validaciones
             if not nombre or not precio or precio <= 0:
