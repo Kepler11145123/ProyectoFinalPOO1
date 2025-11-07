@@ -702,7 +702,7 @@ def pagar():
 
         # Mostrar página que abre el recibo en nueva pestaña y redirige
         return render_template('pago_exitoso.html', pdf_filename=pdf_filename)
-    except Exception as ex:
+    except Exception:
         app.logger.exception('Error al procesar pago/generar recibo:')
         flash('Ocurrió un error al procesar el pago. Intente nuevamente.', 'danger')
         return redirect(url_for('ver_carrito'))
