@@ -82,7 +82,7 @@
                                 const data = await resp.json();
                                 if (data && data.pdf_url) {
                                     newTab.location = data.pdf_url;
-                                    setTimeout(function(){ window.location.href = "{{ url_for('catalogo') }}"; }, 600);
+                                    setTimeout(function(){ globalThis.location.href = "{{ url_for('catalogo') }}"; }, 600);
                                     return;
                                 }
                                 newTab.close();
@@ -97,7 +97,7 @@
                                 newTab.location = blobUrl;
                                 // Opcional: revocar URL luego de un tiempo
                                 setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
-                                setTimeout(function(){ window.location.href = "{{ url_for('catalogo') }}"; }, 600);
+                                setTimeout(function(){ globalThis.location.href = "{{ url_for('catalogo') }}"; }, 600);
                                 return;
                             }
 
