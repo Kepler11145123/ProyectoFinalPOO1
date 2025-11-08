@@ -108,7 +108,14 @@
                             alert('Respuesta inesperada del servidor. Revisa la consola.');
 
                         } catch (err) {
-                            if (newTab) try { newTab.close(); } catch(e){}
+                            if (newTab) {
+                                try {
+                                    newTab.close();
+                                } catch (e) {
+                                    // Log and continue — closing the popup is best-effort
+                                    console.warn('No se pudo cerrar la pestaña de pago:', e);
+                                }
+                            }
                             alert('Error de red al procesar el pago.');
                             console.error(err);
                         }
