@@ -933,7 +933,7 @@ def _extract_new_detail_data(key):
 
 def _process_new_details(conexion, id_pedido):
     """Busca claves new_prod_id_* en request.form y crea nuevas líneas."""
-    for key in list(request.form.keys()):
+    for key in request.form.keys():
         detail_data = _extract_new_detail_data(key)
         if detail_data:
             PedidoModel.agregar_detalle(
