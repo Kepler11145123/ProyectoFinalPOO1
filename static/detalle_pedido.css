@@ -69,8 +69,9 @@ table {
 }
 
 thead {
-    background: #667eea;
-    color: white;
+    /* Darken header background to improve contrast with white text (WCAG AA) */
+    background: #2f357f; /* darker purple */
+    color: #ffffff;
 }
 
 th, td {
