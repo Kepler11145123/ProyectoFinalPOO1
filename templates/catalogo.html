@@ -222,7 +222,7 @@
             let cantidad = 1;
             const qtyInput = form.querySelector('input[name="quantity"]');
             if (qtyInput) {
-              cantidad = parseInt(qtyInput.value) || 1;
+              cantidad = Number.parseInt(qtyInput.value) || 1;
             }
             try {
               const res = await fetch(apiUrl, {
@@ -251,12 +251,13 @@
         // ===== Custom select behavior refactored to avoid deep nesting =====
         (function() {
           function closeAll() {
-            document.querySelectorAll('.custom-select-options.show').forEach(el => {
-              el.classList.remove('show');
-              el.setAttribute('aria-hidden', 'true');
-              const toggle = el.parentElement.querySelector('.custom-select-toggle');
-              if (toggle) toggle.setAttribute('aria-expanded', 'false');
-            });
+        const openOptions = document.querySelectorAll('.custom-select-options.show');
+        for (const el of openOptions) {
+          el.classList.remove('show');
+          el.setAttribute('aria-hidden', 'true');
+          const toggle = el.parentElement.querySelector('.custom-select-toggle');
+          if (toggle) toggle.setAttribute('aria-expanded', 'false');
+        }
           }
 
           function onDocumentClick(e) {
@@ -282,7 +283,7 @@
           }
 
           function onOptionSelected(li, options, input, valueEl, toggle) {
-            options.querySelectorAll('li').forEach(x => x.classList.remove('selected'));
+            for (const x of options.querySelectorAll('li')) x.classList.remove('selected');
             li.classList.add('selected');
             const v = li.dataset.value;
             if (input) input.value = v;
@@ -295,13 +296,13 @@
           document.addEventListener('click', onDocumentClick);
 
           const selects = document.querySelectorAll('.custom-select');
-          selects.forEach(function setupSelect(sel) {
+          for (const sel of selects) {
             const toggle = sel.querySelector('.custom-select-toggle');
             const options = sel.querySelector('.custom-select-options');
             const input = sel.querySelector('input[name="quantity"]');
             const valueEl = sel.querySelector('.custom-select-value');
 
-            if (!toggle || !options) return;
+            if (!toggle || !options) continue;
 
             // Toggle click uses a named handler to avoid nesting
             toggle.addEventListener('click', function(ev) { onToggleClick(options, toggle, ev); });
@@ -313,7 +314,7 @@
               ev.stopPropagation();
               onOptionSelected(li, options, input, valueEl, toggle);
             });
-          });
+          }
         })();
 
         // Delegated handler for remove-from-cart forms inside the cart container
