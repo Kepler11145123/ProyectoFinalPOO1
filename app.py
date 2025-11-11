@@ -905,7 +905,7 @@ def _handle_post_pedido(conexion, pedido_id):
             form_map = request.form.to_dict(flat=False)
             app.logger.info(f"[DEBUG editar_pedido POST] request.form (multi): {form_map}")
         except Exception:
-            app.logger.info(f"[DEBUG editar_pedido POST] no se pudo volcar form.to_dict(flat=False)")
+            app.logger.info("[DEBUG editar_pedido POST] no se pudo volcar form.to_dict(flat=False)")
         # También volcar el body crudo (por si los nombres no llegan como espera)
         try:
             raw = request.get_data(as_text=True)
