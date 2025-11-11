@@ -324,6 +324,18 @@ def eliminar_producto(id):
         return redirect(url_for('inicio'))
     
     try:
+        cursor = conexion.cursor()
+        cursor.execute(
+            "SELECT COUNT(*) FROM detalle_pedidos WHERE id_producto = %s",
+            (id,)
+        )
+        count = cursor.fetchone()[0]
+        cursor.close()
+        
+        if count > 0:
+            flash(f'No se puede eliminar este producto porque está asociado a {count} pedido(s). Considera desactivarlo en lugar de eliminarlo.', 'warning')
+            return redirect(url_for('panel_admin'))
+        
         ProductoModel.delete_product(conexion, id)
         flash('Producto eliminado correctamente.', 'success')
     except Exception as e:
