@@ -994,51 +994,89 @@ def _extract_new_detail_data(key):
 
 def _process_new_details(conexion, id_pedido):
     """Busca claves new_prod_id_* en request.form y crea nuevas líneas."""
-    processed = set()
+    _process_json_lines(conexion, id_pedido)
+    _process_list_format(conexion, id_pedido)
+    _process_suffix_format(conexion, id_pedido)
 
-    # 0) Si el cliente envió JSON serializado con las nuevas líneas, procesarlo primero
+
+def _process_json_lines(conexion, id_pedido):
+    """Procesa JSON serializado con nuevas líneas."""
     json_payload = request.form.get('new_lines_json')
-    if json_payload:
-        try:
-            items = json.loads(json_payload)
-            if isinstance(items, list):
-                for it in items:
-                    prod_id = _safe_int(it.get('prod_id') if isinstance(it, dict) else None)
-                    cantidad = _safe_int(it.get('cantidad') if isinstance(it, dict) else None, 1)
-                    if prod_id is not None and cantidad is not None:
-                        app.logger.info(f"_process_new_details(json): agregando producto {prod_id} x{cantidad} al pedido {id_pedido}")
-                        PedidoModel.agregar_detalle(conexion, id_pedido, prod_id, cantidad)
-        except Exception as ex:
-            app.logger.error(f"Error parseando new_lines_json: {ex}")
+    if not json_payload:
+        return
 
-    # 1) Procesar listas repetidas (nombres 'new_prod_id' y 'new_cant') si existen
+    try:
+        items = json.loads(json_payload)
+        if isinstance(items, list):
+            for item in items:
+                _add_detail_from_dict(conexion, id_pedido, item, 'json')
+    except Exception as ex:
+        app.logger.error(f"Error parseando new_lines_json: {ex}")
+
+
+def _process_list_format(conexion, id_pedido):
+    """Procesa listas repetidas (new_prod_id y new_cant)."""
     prod_list = request.form.getlist('new_prod_id')
-    cant_list = request.form.getlist('new_cant')
-    if prod_list:
-        # Emparejar por índice; si faltan cantidades, usar 1
-        for idx, prod_val in enumerate(prod_list):
-            try:
-                cant_val = cant_list[idx] if idx < len(cant_list) else '1'
-            except Exception:
-                cant_val = '1'
-            prod_id = _safe_int(prod_val)
-            cantidad = _safe_int(cant_val, 1)
-            if prod_id is not None and cantidad is not None:
-                app.logger.info(f"_process_new_details(list): agregando producto {prod_id} x{cantidad} al pedido {id_pedido}")
-                PedidoModel.agregar_detalle(conexion, id_pedido, prod_id, cantidad)
+    if not prod_list:
+        return
 
-    # 2) Procesar claves con sufijo (mantener compatibilidad con la forma anterior)
+    cant_list = request.form.getlist('new_cant')
+    for idx, prod_val in enumerate(prod_list):
+        cant_val = _get_safe_quantity(cant_list, idx)
+        _add_detail(conexion, id_pedido, prod_val, cant_val, 'list')
+
+
+def _process_suffix_format(conexion, id_pedido):
+    """Procesa claves con sufijo (new_prod_id_*)."""
+    processed = set()
     for key in request.form.keys():
-        if key.startswith('new_prod_id_'):
-            # evitar procesar la misma entrada dos veces; identificador único
-            suffix = key[len('new_prod_id_'):]
-            if suffix in processed:
-                continue
-            detail_data = _extract_new_detail_data(key)
-            if detail_data:
-                app.logger.info(f"_process_new_details(suffix): agregando producto {detail_data['prod_id']} x{detail_data['cantidad']} al pedido {id_pedido}")
-                PedidoModel.agregar_detalle(conexion, id_pedido, detail_data['prod_id'], detail_data['cantidad'])
-                processed.add(suffix)
+        if not key.startswith('new_prod_id_'):
+            continue
+
+        suffix = key[len('new_prod_id_'):]
+        if suffix in processed:
+            continue
+
+        detail_data = _extract_new_detail_data(key)
+        if detail_data:
+            _add_detail(conexion, id_pedido, 
+                       detail_data['prod_id'], 
+                       detail_data['cantidad'], 
+                       'suffix')
+            processed.add(suffix)
+
+
+def _add_detail_from_dict(conexion, id_pedido, item, source):
+    """Agrega detalle desde un diccionario (JSON)."""
+    if not isinstance(item, dict):
+        return
+
+    prod_id = _safe_int(item.get('prod_id'))
+    cantidad = _safe_int(item.get('cantidad'), 1)
+    _add_detail(conexion, id_pedido, prod_id, cantidad, source)
+
+
+def _add_detail(conexion, id_pedido, prod_id, cantidad, source):
+    """Valida y agrega un detalle de pedido."""
+    prod_id = _safe_int(prod_id)
+    cantidad = _safe_int(cantidad, 1)
+
+    if prod_id is None or cantidad is None:
+        return
+
+    app.logger.info(
+        f"_process_new_details({source}): agregando producto {prod_id} "
+        f"x{cantidad} al pedido {id_pedido}"
+    )
+    PedidoModel.agregar_detalle(conexion, id_pedido, prod_id, cantidad)
+
+
+def _get_safe_quantity(cant_list, idx):
+    """Obtiene cantidad segura desde lista, default 1."""
+    try:
+        return cant_list[idx] if idx < len(cant_list) else '1'
+    except Exception:
+        return '1'
 
 @app.route('/carrito/limpiar', methods=['POST'])
 @login_required
