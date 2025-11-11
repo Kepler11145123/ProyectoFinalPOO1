@@ -20,6 +20,7 @@
       <form method="POST" action="{{ url_for('editar_pedido_admin', pedido_id=pedido.id_pedido) }}" class="ep-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
+        <!-- IMPORTANTE: Selector de estado (estaba en la original) -->
         <div class="ep-status-row" style="margin-bottom:12px; display:flex; align-items:center; gap:12px;">
           <label for="status" class="ep-label">Estado del pedido:</label>
           <select name="status" id="status" class="ep-select">
@@ -64,11 +65,10 @@
           <div class="ep-add-left">
             <label for="new-product-select" class="ep-label">Añadir producto</label>
             <select id="new-product-select" class="ep-select">
-                {% for p in productos %}
-            <option value="{{ p.id }}">{{ p.nombre }}</option>
-                {% endfor %}
+              {% for p in productos %}
+                <option value="{{ p.id }}">{{ p.nombre }}</option>
+              {% endfor %}
             </select>
-
           </div>
           <div class="ep-add-right">
             <input type="number" id="new-product-qty" min="1" value="1" class="ep-input small" />
@@ -85,6 +85,7 @@
   </main>
 
   <script>
+    // Marcar un detalle existente como eliminado
     function marcarEliminar(id) {
       const keep = document.getElementById('keep_' + id);
       if (keep) {
@@ -94,31 +95,44 @@
       }
     }
 
+    // Agregar una nueva línea de producto
     function agregarLinea() {
-  const select = document.getElementById('new-product-select');
-  const qty = document.getElementById('new-product-qty').value || 1;
-  const prodId = select.value;
-  const prodText = select.options[select.selectedIndex].text;
-  const tbody = document.getElementById('detalles-body');
-  const newId = 'new_' + Date.now();
-  const tr = document.createElement('tr');
-  tr.dataset.detalleId = newId;
-  
-  tr.className = 'ep-row';
-  tr.innerHTML = `
-    <td class="ep-new-prod">
-      <input type="hidden" name="new_prod_id_${newId}" value="${prodId}" />
-      <span class="ep-new-text">${prodText}</span>
-    </td>
-    <td>
-      <input type="number" min="1" name="new_cant_${newId}" value="${qty}" class="ep-input" />
-    </td>
-    <td class="ep-actions">
-      <button type="button" class="ep-btn ep-btn-danger" onclick="this.closest('tr').remove()">Eliminar</button>
-    </td>
-  `;
+      const select = document.getElementById('new-product-select');
+      const qty = document.getElementById('new-product-qty').value || 1;
+      const prodId = select.value;
+      const prodText = select.options[select.selectedIndex].text;
+      const tbody = document.getElementById('detalles-body');
+      const newId = 'new_' + Date.now();
+      
+      const tr = document.createElement('tr');
+      tr.dataset.detalleId = newId;
+      tr.className = 'ep-row';
+      
+      tr.innerHTML = `
+        <td class="ep-new-prod">
+          <input type="hidden" name="new_prod_id_${newId}" value="${prodId}" />
+          <span class="ep-new-text">${prodText}</span>
+        </td>
+        <td>
+          <input type="number" min="1" name="new_cant_${newId}" value="${qty}" class="ep-input" />
+        </td>
+        <td class="ep-actions">
+          <button type="button" class="ep-btn ep-btn-danger" onclick="this.closest('tr').remove()">Eliminar</button>
+        </td>
+      `;
+      
       tbody.appendChild(tr);
     }
-</script>
+
+    // Event listeners
+    document.getElementById('btn-add-line').addEventListener('click', agregarLinea);
+    
+    document.querySelectorAll('.btn-eliminar').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const detalleId = this.dataset.detalle;
+        marcarEliminar(detalleId);
+      });
+    });
+  </script>
 </body>
 </html>

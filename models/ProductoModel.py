@@ -7,11 +7,49 @@ class ProductoModel:
         productos = []
         try:
             with db_connection.cursor() as cursor:
-                cursor.execute("""SELECT id, nombre, descripcion, categoria, 
-                  nombre_columna_imagen, precio, stock 
-                  FROM productos 
-                  WHERE activo = TRUE 
-                  ORDER BY id ASC""")
+                cursor.execute("""
+                    SELECT id, nombre, descripcion, categoria,
+                           nombre_columna_imagen, precio, stock, activo
+                    FROM productos
+                    ORDER BY id ASC
+                """)
+
+                rows = cursor.fetchall()
+
+                for row in rows:
+                    producto = Producto(
+                        id=row[0],
+                        nombre=row[1],
+                        descripcion=row[2],
+                        categoria=row[3],
+                        nombre_columna_imagen=row[4],
+                        precio=row[5],
+                        stock=row[6]
+                    )
+                    # Exponer el estado activo para el panel admin
+                    producto.activo = bool(row[7])
+                    productos.append(producto)
+
+            return productos
+        except Exception as ex:
+            db_connection.rollback()
+            raise ValueError(f"Error al obtener productos: {ex}")
+
+    @classmethod
+    def get_active_products(cls, db_connection):
+        """
+        Obtiene SOLO los productos activos para el catálogo público.
+        """
+        productos = []
+        try:
+            with db_connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, nombre, descripcion, categoria,
+                           nombre_columna_imagen, precio, stock
+                    FROM productos
+                    WHERE activo = TRUE
+                    ORDER BY id ASC
+                """)
 
                 rows = cursor.fetchall()
 
@@ -26,12 +64,11 @@ class ProductoModel:
                         stock=row[6]
                     )
                     productos.append(producto)
-                # ... (resto de tu lógica para crear la lista de productos)
+
             return productos
         except Exception as ex:
-            # ¡IMPORTANTE! Hacer rollback
             db_connection.rollback()
-            raise ValueError(f"Error al obtener productos: {ex}")
+            raise ValueError(f"Error al obtener productos activos: {ex}")
 
     @classmethod
     def get_product_by_id(cls, db_connection, producto_id):

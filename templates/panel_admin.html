@@ -86,31 +86,21 @@
             </td>
             <!-- Mostramos la imagen en tamaño pequeño -->
 
-            <!-- 5. Botones de Editar y Eliminar para CADA producto -->
+            <!-- 5. Botones de Editar y Activar/Desactivar para CADA producto -->
             <td class="actions">
-              <a
-                href="{{ url_for('editar_producto', id=producto.id) }}"
-                class="btn btn-warning"
-                >Editar</a
-              >
-              <form
-                action="{{ url_for('eliminar_producto', id=producto.id) }}"
-                method="POST"
-                style="display: inline"
-              >
-                <input
-                  type="hidden"
-                  name="csrf_token"
-                  value="{{ csrf_token() }}"
-                />
-                <button
-                  type="submit"
-                  class="btn btn-danger"
-                  onclick="return confirm('¿Estás seguro de que deseas desactivar este producto?')"
-                >
-                  Desactivar
-                </button>
-              </form>
+              <a href="{{ url_for('editar_producto', id=producto.id) }}" class="btn btn-warning">Editar</a>
+
+              {% if producto.activo %}
+                <form action="{{ url_for('eliminar_producto', id=producto.id) }}" method="POST" style="display:inline; margin-left:6px;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" class="btn btn-danger" onclick="return confirm('¿Desactivar este producto?')">❌ Desactivar</button>
+                </form>
+              {% else %}
+                <form action="{{ url_for('activar_producto', id=producto.id) }}" method="POST" style="display:inline; margin-left:6px;">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+                  <button type="submit" class="btn btn-success" onclick="return confirm('¿Activar este producto?')">✅ Activar</button>
+                </form>
+              {% endif %}
             </td>
           </tr>
           {% endfor %}

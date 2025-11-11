@@ -19,6 +19,7 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import Table, TableStyle
 from datetime import datetime
+import json
 LOGIN_TEMPLATE = 'login.html'
 FORM_PRODUCTO_TEMPLATE = 'form_producto.html'
 REGISTRO_TEMPLATE = 'registro.html'
@@ -155,8 +156,9 @@ def panel_admin():
         if current_user.rol != 'administrador':
             flash("No tienes permisos para acceder a esta página.", "danger")
             return redirect(url_for('inicio'))
-            
+
         conexion = get_db()
+        # Mostrar TODOS los productos en el panel de administración (incluye inactivos)
         productos = ProductoModel.get_all_products(conexion)
         return render_template('panel_admin.html', productos=productos)
     except Exception as ex:
@@ -341,6 +343,28 @@ def eliminar_producto(id):
     except Exception as e:
         flash(f"Error al eliminar: {e}", 'danger')
     
+    return redirect(url_for('panel_admin'))
+
+
+@app.route('/admin/producto/activar/<int:id>', methods=['POST'])
+@login_required
+def activar_producto(id):
+    """Activa un producto desactivado"""
+    conexion = get_db()
+    if current_user.rol != 'administrador':
+        flash("No tienes permisos.", "danger")
+        return redirect(url_for('inicio'))
+
+    try:
+        cursor = conexion.cursor()
+        cursor.execute("UPDATE productos SET activo = TRUE WHERE id = %s", (id,))
+        conexion.commit()
+        cursor.close()
+        flash('Producto activado correctamente.', 'success')
+    except Exception as e:
+        conexion.rollback()
+        flash(f"Error al activar producto: {str(e)}", 'danger')
+
     return redirect(url_for('panel_admin'))
 
 @app.route('/registro', methods=['GET', 'POST'])
@@ -869,7 +893,27 @@ def _handle_get_pedido(conexion, pedido, pedido_id):
 
 def _handle_post_pedido(conexion, pedido_id):
     """Maneja las solicitudes POST: procesa cambios y actualiza."""
+    # DEBUG: volcar lo que llega en el formulario para depuración
+    try:
+        keys = list(request.form.keys())
+        app.logger.info(f"[DEBUG editar_pedido POST] request.form.keys(): {keys}")
+        # Mostrar valores no planos (listas) para ver inputs duplicados
+        try:
+            form_map = request.form.to_dict(flat=False)
+            app.logger.info(f"[DEBUG editar_pedido POST] request.form (multi): {form_map}")
+        except Exception:
+            app.logger.info(f"[DEBUG editar_pedido POST] no se pudo volcar form.to_dict(flat=False)")
+        # También volcar el body crudo (por si los nombres no llegan como espera)
+        try:
+            raw = request.get_data(as_text=True)
+            app.logger.info(f"[DEBUG editar_pedido POST] raw body: {raw}")
+        except Exception:
+            app.logger.info("[DEBUG editar_pedido POST] no se pudo leer request.get_data()")
+    except Exception as ex:
+        app.logger.error(f"Error registrando request.form en editar_pedido: {ex}")
+
     detalles = PedidoModel.obtener_detalle_pedido(conexion, pedido_id)
+    app.logger.info(f"[DEBUG editar_pedido POST] detalles actuales ids: {[_get_det_id(d) for d in detalles]}")
     _process_existing_details(conexion, detalles)
     _process_new_details(conexion, pedido_id)
     # Procesar posible cambio de estado enviado desde el formulario
@@ -906,6 +950,7 @@ def _should_keep_detail(det_id):
 def _process_detail_action(conexion, det_id):
     """Procesa acciones para un detalle: eliminar o actualizar."""
     if not _should_keep_detail(det_id):
+        app.logger.info(f"_process_detail_action: eliminando detalle {det_id}")
         PedidoModel.eliminar_detalle(conexion, det_id)
         return
     
@@ -913,6 +958,7 @@ def _process_detail_action(conexion, det_id):
     cantidad = _safe_int(request.form.get(f'cantidad_{det_id}'), 1) or 1
     
     if prod_id is not None:
+        app.logger.info(f"_process_detail_action: actualizando detalle {det_id} -> producto {prod_id} cantidad {cantidad}")
         PedidoModel.actualizar_detalle(conexion, det_id, prod_id, cantidad)
 
 
@@ -945,15 +991,51 @@ def _extract_new_detail_data(key):
 
 def _process_new_details(conexion, id_pedido):
     """Busca claves new_prod_id_* en request.form y crea nuevas líneas."""
+    processed = set()
+
+    # 0) Si el cliente envió JSON serializado con las nuevas líneas, procesarlo primero
+    json_payload = request.form.get('new_lines_json')
+    if json_payload:
+        try:
+            items = json.loads(json_payload)
+            if isinstance(items, list):
+                for it in items:
+                    prod_id = _safe_int(it.get('prod_id') if isinstance(it, dict) else None)
+                    cantidad = _safe_int(it.get('cantidad') if isinstance(it, dict) else None, 1)
+                    if prod_id is not None and cantidad is not None:
+                        app.logger.info(f"_process_new_details(json): agregando producto {prod_id} x{cantidad} al pedido {id_pedido}")
+                        PedidoModel.agregar_detalle(conexion, id_pedido, prod_id, cantidad)
+        except Exception as ex:
+            app.logger.error(f"Error parseando new_lines_json: {ex}")
+
+    # 1) Procesar listas repetidas (nombres 'new_prod_id' y 'new_cant') si existen
+    prod_list = request.form.getlist('new_prod_id')
+    cant_list = request.form.getlist('new_cant')
+    if prod_list:
+        # Emparejar por índice; si faltan cantidades, usar 1
+        for idx, prod_val in enumerate(prod_list):
+            try:
+                cant_val = cant_list[idx] if idx < len(cant_list) else '1'
+            except Exception:
+                cant_val = '1'
+            prod_id = _safe_int(prod_val)
+            cantidad = _safe_int(cant_val, 1)
+            if prod_id is not None and cantidad is not None:
+                app.logger.info(f"_process_new_details(list): agregando producto {prod_id} x{cantidad} al pedido {id_pedido}")
+                PedidoModel.agregar_detalle(conexion, id_pedido, prod_id, cantidad)
+
+    # 2) Procesar claves con sufijo (mantener compatibilidad con la forma anterior)
     for key in request.form.keys():
-        detail_data = _extract_new_detail_data(key)
-        if detail_data:
-            PedidoModel.agregar_detalle(
-                conexion, 
-                id_pedido, 
-                detail_data['prod_id'], 
-                detail_data['cantidad']
-            )
+        if key.startswith('new_prod_id_'):
+            # evitar procesar la misma entrada dos veces; identificador único
+            suffix = key[len('new_prod_id_'):]
+            if suffix in processed:
+                continue
+            detail_data = _extract_new_detail_data(key)
+            if detail_data:
+                app.logger.info(f"_process_new_details(suffix): agregando producto {detail_data['prod_id']} x{detail_data['cantidad']} al pedido {id_pedido}")
+                PedidoModel.agregar_detalle(conexion, id_pedido, detail_data['prod_id'], detail_data['cantidad'])
+                processed.add(suffix)
 
 @app.route('/carrito/limpiar', methods=['POST'])
 @login_required
