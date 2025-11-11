@@ -7,7 +7,12 @@ class ProductoModel:
         productos = []
         try:
             with db_connection.cursor() as cursor:
-                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM productos ORDER BY id ASC")
+                cursor.execute("""SELECT id, nombre, descripcion, categoria, 
+                  nombre_columna_imagen, precio, stock 
+                  FROM productos 
+                  WHERE activo = TRUE 
+                  ORDER BY id ASC""")
+
                 rows = cursor.fetchall()
 
                 for row in rows:
@@ -34,7 +39,11 @@ class ProductoModel:
         try:
             with db_connection.cursor() as cursor:
                 # OJO: Aquí dice 'categoria' pero debería ser 'productos'
-                cursor.execute("SELECT id, nombre, descripcion, categoria, nombre_columna_imagen, precio, stock FROM productos WHERE id = %s", (producto_id,))
+                cursor.execute("""SELECT id, nombre, descripcion, categoria, 
+                  nombre_columna_imagen, precio, stock 
+                  FROM productos 
+                  WHERE id = %s AND activo = TRUE""", (producto_id,))
+
                 row = cursor.fetchone()
 
                 if row:
@@ -115,17 +124,20 @@ class ProductoModel:
             raise ValueError(f"Error al actualizar producto: {ex}")
         
     @classmethod
-    def delete_product(cls, db_connection, producto_id):
-        """
-        Elimina un producto de la base de datos por su ID.
-        """
-        try:
-            cursor = db_connection.cursor()
-            cursor.execute("DELETE FROM productos WHERE id = %s", (producto_id,))
-            db_connection.commit()
-            cursor.close()
-            return True
-        except Exception as ex:
-            db_connection.rollback()
-            raise ValueError(f"Error al eliminar producto: {ex}")
+def delete_product(cls, db_connection, producto_id):
+    """
+    Desactiva un producto en lugar de eliminarlo (soft delete).
+    """
+    try:
+        cursor = db_connection.cursor()
+        # Cambiamos DELETE por UPDATE
+        cursor.execute("UPDATE productos SET activo = FALSE WHERE id = %s", 
+                      (producto_id,))
+        db_connection.commit()
+        cursor.close()
+        return True
+    except Exception as ex:
+        db_connection.rollback()
+        raise ValueError(f"Error al desactivar producto: {ex}")
+
             

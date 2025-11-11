@@ -1,17 +1,25 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Panel de Administrador</title>
-    
-    <!-- Enlazamos los archivos de estilo -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='panel_admin.css') }}">
-    <link rel="icon" href="{{ url_for('static', filename='imagenes/icons8-illuminati-symbol-48.png') }}">
-</head>
-<body>
 
+    <!-- Enlazamos los archivos de estilo -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='panel_admin.css') }}"
+    />
+    <link
+      rel="icon"
+      href="{{ url_for('static', filename='imagenes/icons8-illuminati-symbol-48.png') }}"
+    />
+  </head>
+  <body>
     <!-- 1. Header consistente con el resto de tu web -->
     <header class="header">
       <div class="header-container">
@@ -20,7 +28,9 @@
         </div>
         <div class="header-right">
           <a href="{{ url_for('catalogo') }}" class="nav-button">Ver Tienda</a>
-          <a href="{{ url_for('logout') }}" class="nav-button logout">Cerrar sesión</a>
+          <a href="{{ url_for('logout') }}" class="nav-button logout"
+            >Cerrar sesión</a
+          >
         </div>
       </div>
     </header>
@@ -28,11 +38,18 @@
     <!-- 2. Contenido principal del panel -->
     <main class="admin-container">
       <h1>Gestión de Productos</h1>
-      
+
       <!-- 🆕 SECCIÓN DE BOTONES DE ADMINISTRACIÓN -->
-      <div class="admin-actions" style="margin-bottom: 20px; display: flex; gap: 10px;">
-        <a href="{{ url_for('buscar_pedidos') }}" class="btn btn-primary">📦 Ver Todos los Pedidos</a>
-        <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">➕ Añadir Nuevo Producto</a>
+      <div
+        class="admin-actions"
+        style="margin-bottom: 20px; display: flex; gap: 10px"
+      >
+        <a href="{{ url_for('buscar_pedidos') }}" class="btn btn-primary"
+          >📦 Ver Todos los Pedidos</a
+        >
+        <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary"
+          >➕ Añadir Nuevo Producto</a
+        >
       </div>
 
       <!-- Tabla de productos -->
@@ -60,15 +77,39 @@
             <td>{{ producto.precio }}</td>
             <td>{{ producto.stock }}</td>
 
-            <td><img src="{{ producto.nombre_columna_imagen }}" alt="producto.nombre" width="80"></td>
+            <td>
+              <img
+                src="{{ producto.nombre_columna_imagen }}"
+                alt="producto.nombre"
+                width="80"
+              />
+            </td>
             <!-- Mostramos la imagen en tamaño pequeño -->
-            
+
             <!-- 5. Botones de Editar y Eliminar para CADA producto -->
             <td class="actions">
-              <a href="{{ url_for('editar_producto', id=producto.id) }}" class="btn btn-warning">Editar</a>
-              <form action="{{ url_for('eliminar_producto', id=producto.id) }}" method="POST" style="display:inline;">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
-                <button type="submit" class="btn btn-danger" onclick="return confirm('¿Estás seguro de que deseas eliminar este producto?')">Eliminar</button>
+              <a
+                href="{{ url_for('editar_producto', id=producto.id) }}"
+                class="btn btn-warning"
+                >Editar</a
+              >
+              <form
+                action="{{ url_for('eliminar_producto', id=producto.id) }}"
+                method="POST"
+                style="display: inline"
+              >
+                <input
+                  type="hidden"
+                  name="csrf_token"
+                  value="{{ csrf_token() }}"
+                />
+                <button
+                  type="submit"
+                  class="btn btn-danger"
+                  onclick="return confirm('¿Estás seguro de que deseas desactivar este producto?')"
+                >
+                  Desactivar
+                </button>
               </form>
             </td>
           </tr>
@@ -76,6 +117,5 @@
         </tbody>
       </table>
     </main>
-
-</body>
+  </body>
 </html>
