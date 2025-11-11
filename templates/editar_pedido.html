@@ -20,6 +20,14 @@
       <form method="POST" action="{{ url_for('editar_pedido_admin', pedido_id=pedido.id_pedido) }}" class="ep-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
 
+        <div class="ep-status-row" style="margin-bottom:12px; display:flex; align-items:center; gap:12px;">
+          <label for="status" class="ep-label">Estado del pedido:</label>
+          <select name="status" id="status" class="ep-select">
+            <option value="pendiente" {% if pedido.status == 'pendiente' %}selected{% endif %}>Pendiente</option>
+            <option value="completado" {% if pedido.status == 'completado' %}selected{% endif %}>Completado</option>
+          </select>
+        </div>
+
         <div class="ep-table-wrap">
           <table class="ep-table">
             <thead>
@@ -43,7 +51,7 @@
                   <input type="number" min="1" name="cantidad_{{ d.id_detalle }}" value="{{ d.cantidad }}" class="ep-input" />
                 </td>
                 <td class="ep-actions">
-                  <button type="button" class="ep-btn ep-btn-danger" onclick="marcarEliminar({{ d.id_detalle }})">Eliminar</button>
+                  <button type="button" class="ep-btn ep-btn-danger btn-eliminar" data-detalle="{{ d.id_detalle }}">Eliminar</button>
                   <input type="hidden" name="keep_{{ d.id_detalle }}" value="1" id="keep_{{ d.id_detalle }}" />
                 </td>
               </tr>
@@ -64,12 +72,12 @@
           </div>
           <div class="ep-add-right">
             <input type="number" id="new-product-qty" min="1" value="1" class="ep-input small" />
-            <button type="button" class="ep-btn ep-btn-primary" onclick="agregarLinea()">Agregar línea</button>
+            <button type="button" class="ep-btn ep-btn-primary" id="btn-add-line">Agregar línea</button>
           </div>
         </div>
 
         <div class="ep-form-footer">
-          <button type="button" class="ep-btn ep-btn-secondary" onclick="window.location='{{ url_for('buscar_pedidos') }}'">Cancelar</button>
+          <a class="ep-btn ep-btn-secondary" href="{{ url_for('buscar_pedidos') }}">Cancelar</a>
           <button type="submit" class="ep-btn ep-btn-success">Guardar cambios</button>
         </div>
       </form>
@@ -111,6 +119,6 @@
   `;
       tbody.appendChild(tr);
     }
-  </script>
+</script>
 </body>
 </html>

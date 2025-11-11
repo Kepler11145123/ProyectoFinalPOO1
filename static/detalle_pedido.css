@@ -69,8 +69,9 @@ table {
 }
 
 thead {
-    background: #667eea;
-    color: white;
+    /* Darken header background to improve contrast with white text (WCAG AA) */
+    background: #2f357f; /* darker purple */
+    color: #ffffff;
 }
 
 th, td {
@@ -110,4 +111,21 @@ tbody tr:hover {
 
 .btn:hover {
     background: #d0d0d0;
+}
+
+/* Badges for pedido status */
+.badge-pendiente {
+    background: #f8d7da;
+    color: #721c24;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
+}
+
+.badge-completado {
+    background: #d4edda;
+    color: #155724;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-weight: 600;
 }

@@ -25,7 +25,11 @@
             </div>
             <div class="info-row">
                 <span class="info-label">Estado:</span>
-                <span class="info-value">{{ pedido.status }}</span>
+                <span class="info-value">
+                    <span class="badge {% if pedido.status == 'pendiente' %}badge-pendiente{% elif pedido.status == 'completado' %}badge-completado{% endif %}">
+                        {{ pedido.status }}
+                    </span>
+                </span>
             </div>
         </div>
 

@@ -15,7 +15,7 @@ class PedidoModel:
                 INSERT INTO pedidos (id_cliente, data_pedido, status)
                 VALUES (%s, %s, %s)
                 RETURNING id_pedido
-            """, (id_cliente, datetime.now(), 'completado'))
+            """, (id_cliente, datetime.now(), 'pendiente'))
 
             id_pedido = cursor.fetchone()[0]
 
@@ -202,3 +202,18 @@ class PedidoModel:
         except Exception as ex:
             conexion.rollback()
             raise ValueError(f"Error al eliminar detalle: {ex}")
+
+    @classmethod
+    def actualizar_status(cls, conexion, id_pedido, nuevo_status):
+        """Actualiza el estado (status) de un pedido. Valores esperados: 'pendiente' o 'completado'."""
+        try:
+            if nuevo_status not in ('pendiente', 'completado'):
+                raise ValueError('Estado inválido')
+            cursor = conexion.cursor()
+            cursor.execute("UPDATE pedidos SET status = %s WHERE id_pedido = %s", (nuevo_status, id_pedido))
+            conexion.commit()
+            cursor.close()
+            return True
+        except Exception as ex:
+            conexion.rollback()
+            raise ValueError(f"Error al actualizar el estado del pedido: {ex}")

@@ -160,3 +160,14 @@ tbody tr:hover {
     color: #856404;
     border: 1px solid #ffeaa7;
 }
+
+/* Badges specific to pedido status */
+.badge-pendiente {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.badge-completado {
+    background: #d4edda;
+    color: #155724;
+}

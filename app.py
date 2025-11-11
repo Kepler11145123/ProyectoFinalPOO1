@@ -872,6 +872,14 @@ def _handle_post_pedido(conexion, pedido_id):
     detalles = PedidoModel.obtener_detalle_pedido(conexion, pedido_id)
     _process_existing_details(conexion, detalles)
     _process_new_details(conexion, pedido_id)
+    # Procesar posible cambio de estado enviado desde el formulario
+    nuevo_status = request.form.get('status')
+    if nuevo_status:
+        try:
+            PedidoModel.actualizar_status(conexion, pedido_id, nuevo_status)
+        except Exception as ex:
+            app.logger.error(f"No se pudo actualizar el estado del pedido {pedido_id}: {ex}")
+            flash('No se pudo actualizar el estado del pedido.', 'warning')
     flash('Pedido actualizado correctamente.', 'success')
     return redirect(url_for('ver_detalle_pedido', pedido_id=pedido_id))
 
@@ -937,7 +945,7 @@ def _extract_new_detail_data(key):
 
 def _process_new_details(conexion, id_pedido):
     """Busca claves new_prod_id_* en request.form y crea nuevas líneas."""
-    for key in list(request.form.keys()):
+    for key in request.form.keys():
         detail_data = _extract_new_detail_data(key)
         if detail_data:
             PedidoModel.agregar_detalle(

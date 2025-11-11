@@ -49,7 +49,11 @@
                         <td>{{ pedido.correo_cliente }}</td>
                         <td>{{ pedido.data_pedido.strftime('%d/%m/%Y %H:%M') }}</td>
                         <td><strong>${{ "%.2f"|format(pedido.total) }}</strong></td>
-                        <td><span class="badge">{{ pedido.status }}</span></td>
+                        <td>
+                            <span class="badge {% if pedido.status == 'pendiente' %}badge-pendiente{% elif pedido.status == 'completado' %}badge-completado{% endif %}">
+                                {{ pedido.status }}
+                            </span>
+                        </td>
                         <td>
                             <a href="{{ url_for('ver_detalle_pedido', pedido_id=pedido.id_pedido) }}" 
                                class="btn btn-primary btn-small">Ver Detalle</a>
