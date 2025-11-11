@@ -424,7 +424,9 @@ def catalogo():
                 flash(f"Error al agregar producto: {str(e)}", 'danger')
     
     try:
-        productos = ProductoModel.get_all_products(conexion)
+        # ✅ AQUÍ ESTÁ EL CAMBIO: usa get_active_products en lugar de get_all_products
+        productos = ProductoModel.get_active_products(conexion)
+        
         # Obtener el carrito del usuario desde la base de datos
         items_carrito = CarritoModel.get_carrito_by_usuario(conexion, current_user.id)
         total_carrito = calcular_total_carrito(items_carrito)
@@ -436,6 +438,7 @@ def catalogo():
     except Exception as e:
         flash(f"Error al cargar el catálogo: {str(e)}", 'danger')
         return redirect(url_for('inicio'))
+
 
 
 @app.route('/api/carrito/agregar', methods=['POST'])
