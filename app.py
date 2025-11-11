@@ -655,7 +655,7 @@ def _generate_pdf_for_items(items_carrito, usuario):
     os.makedirs(recibos_dir, exist_ok=True)
 
     # Nombre único para el PDF
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    timestamp = datetime.now().strftime('%Y%m%d_%H-%M-%S')
     pdf_filename = f"recibo_{getattr(usuario, 'id', 'anon')}_{timestamp}.pdf"
     pdf_path = os.path.join(recibos_dir, pdf_filename)
 
