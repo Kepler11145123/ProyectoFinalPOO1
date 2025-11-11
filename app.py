@@ -935,7 +935,6 @@ def _process_new_details(conexion, id_pedido):
                 detail_data['cantidad']
             )
 
-
 @app.route('/carrito/limpiar', methods=['POST'])
 @login_required
 def limpiar_carrito():
