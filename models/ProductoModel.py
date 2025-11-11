@@ -124,20 +124,20 @@ class ProductoModel:
             raise ValueError(f"Error al actualizar producto: {ex}")
         
     @classmethod
-def delete_product(cls, db_connection, producto_id):
-    """
-    Desactiva un producto en lugar de eliminarlo (soft delete).
-    """
-    try:
-        cursor = db_connection.cursor()
-        # Cambiamos DELETE por UPDATE
-        cursor.execute("UPDATE productos SET activo = FALSE WHERE id = %s", 
-                      (producto_id,))
-        db_connection.commit()
-        cursor.close()
-        return True
-    except Exception as ex:
-        db_connection.rollback()
-        raise ValueError(f"Error al desactivar producto: {ex}")
+    def delete_product(cls, db_connection, producto_id):
+        """
+        Desactiva un producto en lugar de eliminarlo (soft delete).
+        """
+        try:
+            cursor = db_connection.cursor()
+            # Cambiamos DELETE por UPDATE
+            cursor.execute("UPDATE productos SET activo = FALSE WHERE id = %s", 
+                        (producto_id,))
+            db_connection.commit()
+            cursor.close()
+            return True
+        except Exception as ex:
+            db_connection.rollback()
+            raise ValueError(f"Error al desactivar producto: {ex}")
 
             
