@@ -124,15 +124,15 @@
       tbody.appendChild(tr);
     }
 
-    // Event listeners
-    document.getElementById('btn-add-line').addEventListener('click', agregarLinea);
-    
-    document.querySelectorAll('.btn-eliminar').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const detalleId = this.dataset.detalle;
-        marcarEliminar(detalleId);
-      });
-    });
+   // Event listeners
+document.getElementById('btn-add-line').addEventListener('click', agregarLinea);
+
+for (const btn of document.querySelectorAll('.btn-eliminar')) {
+  btn.addEventListener('click', function() {
+    const detalleId = this.dataset.detalle;
+    marcarEliminar(detalleId);
+  });
+}
   </script>
 </body>
 </html>
