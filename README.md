@@ -139,8 +139,7 @@ PostgreSQL
 | `/catalogo` | GET | Ver productos |
 | `/carrito` | GET | Ver carrito |
 | `/crear-pedido` | POST | Comprar |
-| `/mis-pedidos` | GET | Historial |
-| `/admin/dashboard` | GET | Admin (admin only) |
+| `/admin/panel_admin` | GET | Admin (admin only) |
 
 ##  Dependencias
 
