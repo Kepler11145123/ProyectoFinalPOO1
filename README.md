@@ -1,15 +1,6 @@
 # 🛍️ E-commerce Final POO-I
-
-[![Python](https://img.shields.io/badge/Python-3.9+-3776ab.svg)](https://www.python.org/)
-[![Flask](https://img.shields.io/badge/Flask-2.0+-000000.svg)](https://flask.palletsprojects.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-12+-336791.svg)](https://www.postgresql.org/)
-[![Grade](https://img.shields.io/badge/Grade-4.72%2F5.0-brightgreen.svg)](https://github.com/Kepler11145123)
-
 Plataforma de e-commerce completa con Flask, PostgreSQL y Programación Orientada a Objetos.
-
-**Calificación: 4.72/5.0 (94.3%) - Muy Adecuado** ✅
-
-## 🚀 Inicio Rápido
+## Inicio Rápido
 
 ### Requisitos
 - Python 3.9+
@@ -43,7 +34,7 @@ python app.py
 
 Accede a: `http://localhost:5000`
 
-## 📁 Estructura
+##  Estructura
 
 ```
 models/
@@ -58,15 +49,31 @@ models/
     └── PedidoModel.py
 
 templates/            # Vistas HTML
-├── base.html
-├── login.html
+├── carrito_compras.html
 ├── catalogo.html
-├── carrito.html
-├── pedidos.html
-└── admin/
+├── inicio.html
+├── login.html
+├── pagar.html
+├── pago_exitoso.html
+├── recuperar.html
+├── registro.html
+└── admin/editar_pedido.html
+└── admin/panel_admin.html
+└── admin/form_producto.html
+└── admin/detalle_pedido.html
+└── admin/buscar_pedidos.html
+
 
 static/              # Estilos e imágenes
-├── css/style.css
+├── auth.css
+├── buscar_pedidos.css
+├── carrito.css
+├── detalle_pedido.css
+├── editar_pedido.css
+├── editar_producto.css
+├── inicio.css
+├── panel_admin.css
+├── style.css
 ├── js/script.js
 └── images/
 
@@ -74,7 +81,7 @@ app.py              # Aplicación principal
 requirements.txt    # Dependencias
 ```
 
-## ✨ Características
+##  Características
 
 - ✅ **Autenticación segura** con hashing de contraseñas
 - ✅ **Roles** (Cliente/Admin) con control de permisos
@@ -87,7 +94,7 @@ requirements.txt    # Dependencias
 - ✅ **Protección CSRF** en formularios
 - ✅ **Prevención SQL Injection** con placeholders
 
-## 🏗️ Arquitectura MVC
+##  Arquitectura MVC
 
 ```
 Flask App (app.py)
@@ -101,7 +108,7 @@ Entities (Objetos dominio)
 PostgreSQL
 ```
 
-## 📊 Base de Datos
+##  Base de Datos
 
 **Tablas:**
 - `usuarios` - Cliente/Administrador
@@ -113,7 +120,7 @@ PostgreSQL
 **Triggers:**
 - Actualizar stock automáticamente al crear pedido
 
-## 🔒 Seguridad
+##  Seguridad
 
 - Contraseñas hasheadas con Werkzeug
 - CSRF tokens en todos los formularios
@@ -123,7 +130,7 @@ PostgreSQL
 - Transacciones con rollback
 - Variables de entorno para secrets
 
-## 🔌 Rutas Principales
+##  Rutas Principales
 
 | Ruta | Método | Descripción |
 |------|--------|-----------|
@@ -135,20 +142,31 @@ PostgreSQL
 | `/mis-pedidos` | GET | Historial |
 | `/admin/dashboard` | GET | Admin (admin only) |
 
-## 📦 Dependencias
+##  Dependencias
 
 ```
-Flask==2.3.0
-psycopg2-binary==2.9.6
-Flask-Login==0.6.2
-Flask-WTF==1.1.1
-Werkzeug==2.3.0
-python-dotenv==1.0.0
+blinker==1.9.0
+click==8.3.0
+colorama==0.4.6
+Flask==3.1.2
+Flask-Login==0.6.3
+Flask-WTF==1.2.2
+gunicorn==23.0.0
+itsdangerous==2.2.0
+Jinja2==3.1.6
+MarkupSafe==3.0.3
+packaging==25.0
+psycopg2==2.9.11
+python-dotenv==1.1.1
+Werkzeug==3.1.3
+WTForms==3.2.1
+reportlab==3.6.13
+
 ```
 
 Ver `requirements.txt` completo
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 ### Error de conexión BD
 ```bash
@@ -171,7 +189,7 @@ Asegurar formularios tengan:
 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 ```
 
-## 🎓 Conceptos POO Implementados
+##  Conceptos POO Implementados
 
 - **Herencia:** Usuario → Cliente/Administrador
 - **Encapsulación:** Atributos privados, métodos públicos
@@ -179,36 +197,5 @@ Asegurar formularios tengan:
 - **Abstracción:** Clases modelo y entidad
 - **Composición:** Models que usan Entities
 
-## 📚 Documentación Adicional
-
-- [QUICKSTART.md](QUICKSTART.md) - Guía paso a paso
-- [.env.example](.env.example) - Variables de entorno
-- [.gitignore](.gitignore) - Archivos ignorados
-
-## 🚀 Mejoras Futuras
-
-- [ ] Sistema de ratings/reseñas
-- [ ] Cupones y descuentos
-- [ ] Integración Stripe/PayPal
-- [ ] Notificaciones email
-- [ ] Búsqueda avanzada
-- [ ] Tests con pytest
-- [ ] API REST documentada
-- [ ] Docker
-
-## 👤 Autor
-
-**Kepler11145123** - [@GitHub](https://github.com/Kepler11145123)
-
-## 📄 Licencia
-
-MIT - Ver LICENSE
-
----
-
-**Calificación:** 4.72/5.0 ⭐ **Muy Adecuado**
-- Contenido: 4.58/5.0
-- Framework: 4.75/5.0
-- Impacto: 4.79/5.0
-
+##  Documentación Adicional
 **Última actualización:** 11 de Noviembre de 2025
